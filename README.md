@@ -69,7 +69,7 @@ Works best where subagents are available (Claude Code, or agent features in the 
 
 ## Result card
 
-Where Claude can draw interactive visuals in the conversation (for example, the Claude app), MAGI adds a small result card after the Markdown result: the resolution, the three units' verdicts, and each unit's rationale on click. Elsewhere, such as Claude Code in a terminal, the card is skipped and the Markdown result is unchanged. Say "no card" to turn it off. The card is specified in [`skills/magi/references/card.md`](skills/magi/references/card.md).
+Where Claude can draw interactive visuals in the conversation (for example, the Claude app), MAGI adds a small result card after the Markdown result: the resolution, the three units' verdicts, and each unit's rationale on click, including how each unit voted on any follow-up proposals. Elsewhere, such as Claude Code in a terminal, the card is skipped and the Markdown result is unchanged. Say "no card" to turn it off. The card is specified in [`skills/magi/references/card.md`](skills/magi/references/card.md).
 
 ## JSON output (optional)
 
