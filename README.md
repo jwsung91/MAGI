@@ -71,7 +71,27 @@ A manual copy does not update itself. If you switch to the plugin, delete `~/.cl
 
 ## Versions
 
-The skill version is in [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) and follows Semantic Versioning; changes are listed in [CHANGELOG.md](CHANGELOG.md). Pushing a tag `v<version>` that matches it publishes a GitHub Release with the zip for the Claude app. The result JSON has its own format version (`version: 2` in `result.schema.json`), which changes only when the result format changes incompatibly; [MAGI-UI](https://github.com/jwsung91/MAGI-UI) follows that format version.
+The skill version is in [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) and follows Semantic Versioning; changes are listed in [CHANGELOG.md](CHANGELOG.md). Version 1.0.0 marks the first public release, not a stability promise.
+
+The result JSON has its own format version (`version` in [`result.schema.json`](skills/magi/result.schema.json)). Two rules connect the two:
+
+- The format version changes only for an incompatible change to the result format. Adding an optional field keeps it.
+- When the format version changes, the skill's major version goes up, because viewers that read the old format stop working.
+
+| Skill | Result format | [MAGI-UI](https://github.com/jwsung91/MAGI-UI) |
+|---|---|---|
+| 1.x | 2 | reads format 2 |
+
+## Releasing
+
+Claude Code installs a plugin update only when the version string changes, so every change under `skills/` needs a new version.
+
+1. In the pull request, raise the version and fill in the new CHANGELOG section:
+   ```bash
+   python3 .github/scripts/release_tools.py bump patch   # or minor / major
+   ```
+2. The **Version check** workflow fails the pull request if `skills/` changed without a bump, the version went down, or the new version has no CHANGELOG entry.
+3. After the merge, the **Release** workflow sees a version with no tag, creates tag `v<version>`, and publishes a GitHub Release with `magi-<version>.zip` and the CHANGELOG section. A push that keeps the version does nothing. To retry a failed release, run the workflow manually from the Actions tab.
 
 ## Usage
 
