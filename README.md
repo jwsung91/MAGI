@@ -71,6 +71,8 @@ Works best where subagents are available (Claude Code, or agent features in the 
 
 In Claude Code, if the environment variable `MAGI_RESULTS_DIR` is set, MAGI also saves each result as a JSON file in that folder, so other tools can read it. The format is described in [`skills/magi/result.schema.json`](skills/magi/result.schema.json). Enum values are always English; free text follows the output language. Without the variable, nothing is written.
 
+To view results on a screen, see [MAGI-UI](https://github.com/jwsung91/MAGI-UI), a separate local viewer.
+
 ## Limitations
 
 All three units come from the same model, so this is not true design diversity; common-mode failure remains. For important decisions, also get a review from other sources, other people, or another model.
@@ -79,7 +81,7 @@ All three units come from the same model, so this is not true design diversity; 
 
 - This is an unofficial personal project and is not affiliated with *Neon Genesis Evangelion* or its rights holders. It only borrows the decision-making idea of the MAGI system from the series.
 - No artwork, logos, or images from the series are included. `docs/flow.svg` is an original diagram made for this repository.
-- If you want to view results in a series-style screen, see [TomaszRewak/MAGI](https://github.com/TomaszRewak/MAGI) (MIT). This repository does not include its code.
+- [MAGI-UI](https://github.com/jwsung91/MAGI-UI) shows results on the screen of [TomaszRewak/MAGI](https://github.com/TomaszRewak/MAGI) (MIT), a fan recreation. It lives in a separate repository; this repository includes none of its code or graphics.
 
 ## License
 
