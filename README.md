@@ -4,7 +4,7 @@ A Claude skill that has three perspectives evaluate one proposal **without seein
 
 ![MAGI deliberation flow](docs/flow.svg)
 
-> The skill itself (`skills/magi/SKILL.md`) is written in Korean. Claude follows it regardless of the language you use, and replies in the language of your request.
+> Two versions of the same skill are included: `skills/magi-en/` (English) and `skills/magi/` (Korean, the original). Both use the skill name `magi`, so install only one of them.
 
 ## Roles
 
@@ -47,12 +47,14 @@ The framing agent picks the preset unless the user specifies one. If none fits, 
 ```bash
 git clone https://github.com/jwsung91/MAGI.git
 mkdir -p ~/.claude/skills
-cp -r MAGI/skills/magi ~/.claude/skills/magi
+cp -r MAGI/skills/magi-en ~/.claude/skills/magi   # English
+# or
+cp -r MAGI/skills/magi ~/.claude/skills/magi      # Korean
 ```
 
 **Claude app**
 
-Zip the `skills/magi` folder and upload it with the Claude app's skill upload feature.
+Zip one of the two folders (`skills/magi-en` or `skills/magi`) and upload it with the Claude app's skill upload feature.
 
 ## Usage
 
