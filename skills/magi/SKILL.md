@@ -59,6 +59,8 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 
 The framing agent decides the grade and gives a one-line reason. When in doubt, treat it as critical.
 
+A thought experiment or discussion question, where nothing will actually be carried out, is **normal** even if its subject is life or safety. The critical grade exists to stop irreversible actions; applied to a question with no action, it mostly turns splits into "on hold" without protecting anyone.
+
 ## 3. Independent review by the three units
 
 Independence is the core.
@@ -116,6 +118,7 @@ Decide in this order.
    - To change position, a unit must cite a **new argument** raised by another unit. "Because the majority saw it that way" is not an argument. This prevents conformity pressure from breaking independence.
    - A unit that changed position states what made it change.
    - If the revote is still split, the result is **on hold** (until the rejecting unit's concerns are resolved).
+   - **What on hold means:** on hold is not a verdict that the proposal is wrong, and "do nothing" is not its default answer. For a real action, it means the action is not carried out until the rejecting unit's concerns are resolved. For a question with nothing to carry out, it means no conclusion: present each position side by side.
 - **Unanimity check:** if all three units reached the same conclusion (all approve or all reject), suspect that they share the same blind spot because they come from the same model, check the following two points, and record the result.
   1. **Shared premise:** do all three units' judgments rest on the same premise? Especially if it is an assumption filled in by the framing agent, state whether the resolution would flip if that premise were wrong.
   2. **Missing alternative:** by treating the proposal only as "do it or not", did the units miss options in between (a reduced version, phased adoption, a different method)? Compare with the framing agent's "options outside the binary", and reflect anything the units did not address in the next actions.
