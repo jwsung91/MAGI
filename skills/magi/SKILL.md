@@ -7,6 +7,8 @@ description: "MAGI-style decision deliberation: three perspectives (technical, s
 
 Three different perspectives evaluate one proposal **independently**, and the result is resolved by a voting rule. The purpose is to keep a judgment from leaning on a single viewpoint and to keep dissent on the record instead of erasing it. The final decision always belongs to the user; the MAGI resolution is presented as input to that decision.
 
+Inspired by the MAGI system in *Neon Genesis Evangelion*. This is an unofficial skill, not affiliated with the series or its rights holders.
+
 ## Roles
 
 | Role | Who | Responsibility |
@@ -85,6 +87,8 @@ The table above is the **default** preset. Keep the unit names and change only t
 | Code review | Correctness and design | Security, failure, compatibility | The colleague who will read and change it: readability, maintainability |
 | Personal decision (career, etc.) | Growth and capability | Risk and stability of life | Motivation and satisfaction |
 | Original | Scientist: understanding and technological progress | Mother: protection and well-being | Woman: love, dreams, desire |
+
+The original preset is inspired by the three aspects given to the MAGI in *Neon Genesis Evangelion*.
 
 The framing agent chooses the preset (section 1). If the user specifies one, follow it. If no preset fits, the framing agent designs three new perspectives for the proposal, chosen so that they can conflict with each other.
 

@@ -1,5 +1,7 @@
 # MAGI — Three-Perspective Majority Deliberation Skill
 
+Inspired by the MAGI system in *Neon Genesis Evangelion*.
+
 A Claude skill that has three perspectives evaluate one proposal **without seeing each other's results**, then resolves it by a voting rule. The goal is to keep a decision from leaning on a single viewpoint and to keep dissent on the record instead of erasing it. The final decision always belongs to the user; the MAGI resolution is input to that decision.
 
 ![MAGI deliberation flow](docs/flow.svg)
