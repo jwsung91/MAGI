@@ -184,9 +184,16 @@ In information mode, use this format instead of a resolution.
 
 ### Result card (optional)
 
-If a tool that renders interactive visuals inline in the conversation is available, draw a result card after the Markdown result, following `references/card.md` in this skill's folder. In short: the proposal and resolution at the top, the three units side by side with their verdicts, one unit's rationale shown when it is clicked, and the minority opinion at the bottom, in a neutral design that follows the host's theme. If `references/card.md` is not available, follow this summary.
+If a tool that renders interactive visuals inline in the conversation is available, draw a result card after the Markdown result, following `references/card.md` in this skill's folder. In short: the proposal and resolution at the top, the three units side by side with their verdicts, one unit's rationale shown when it is clicked, and the minority opinion at the bottom, in a neutral design that follows the host's theme. Unit tiles are filled with their verdict color (approve blue, reject red); the resolution badge is passed green, rejected red, on hold yellow; confidence appears only as text in the details. If `references/card.md` is not available, follow this summary.
 
 Without such a tool, skip the card: do not print its HTML or create a file for it. Also skip it when the user asks for no card. The Markdown result is always complete on its own.
+
+### Before finishing
+
+Check each output in this order before ending the reply:
+1. The Markdown result.
+2. The result card, if a tool that renders inline visuals is available.
+3. The JSON result and the `final` progress event, if `MAGI_RESULTS_DIR` is set (sections 6 and 7).
 
 ## Output language
 
@@ -226,6 +233,35 @@ units: {melchior, balthasar, casper}, each:
   answer: text                              (information mode)
   error: text                               (when verdict is "error")
 ```
+
+## 7. Progress log (optional, JSON Lines)
+
+In Claude Code, when `MAGI_RESULTS_DIR` is set, also record the run as it happens, one JSON line per event, in `$MAGI_RESULTS_DIR/<run_id>.jsonl`. `<run_id>` is the same `YYYYMMDD-HHMMSS-<short-slug>` used for the JSON result. Anyone can follow it live (`tail -f`) or review it afterwards.
+
+- Only the moderator writes. Units keep returning text.
+- Write with the helper in this skill's folder, passing the event on stdin through a quoted heredoc, so no shell escaping is needed:
+
+  ```bash
+  python3 <skill_dir>/scripts/log_event.py "$MAGI_RESULTS_DIR/<run_id>.jsonl" <<'EOF'
+  {"run_id": "<run_id>", "event": "framing_done", "data": {...}}
+  EOF
+  ```
+
+  The helper adds `v`, `seq` and `ts` and appends one line.
+- Events, at these moments (combine events from the same moment into one call by running the helper once per event inside one shell command):
+
+  | event | when | data |
+  |---|---|---|
+  | `run_started` | start | `request` (verbatim), `lang` |
+  | `facts_gathered` | after gathering facts | `facts` |
+  | `framing_done` | after framing (again after re-framing) | `mode`, `agenda`, `follow_ups`, `grade`, `preset`, `questions` |
+  | `questions_answered` | after the user answers | `answers` |
+  | `units_started` | before running the units | `round` (1, or 2 for debate) |
+  | `units_done` | when the units' results arrive (all three at once) | `round`, and per unit `verdict` and `confidence` |
+  | `final` | at the end | `result`: the full version 2 result object |
+  | `error` | on failure | `stage`, `message` |
+
+- Logging is best-effort. If the helper is missing (for example, in an account skill without the scripts folder) or a write fails, do not retry and do not stop: continue the deliberation and mention the skipped logging in one line at the end.
 
 ## On limitations
 

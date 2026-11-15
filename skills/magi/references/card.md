@@ -17,8 +17,9 @@ Take every value from the same result the Markdown and JSON come from. Field nam
 - Resolution badge on the right: `verdict` (passed / rejected / on hold / error), with `approve_count`/3 below it. If a debate round was held, add "debate: 1 round".
 
 **Three unit tiles, side by side, in the order MELCHIOR-1, BALTHASAR-2, CASPER-3**
-- Unit name, `perspective`, a verdict badge (approve / reject / error), and `confidence`.
-- Clicking a tile shows that unit's details in one panel below the tiles: `rationale`, `doubted_premise`, and `recommendations` if any. Only one unit's details are shown at a time. Before any click, the panel says to click a unit.
+- Unit name, `perspective`, and the verdict (approve / reject / error). Fill the whole tile with the verdict's color, with light text on it. Do not show confidence on the tile.
+- Build the tiles as plain block elements (for example `div` with `role="button"`), not `<button>`: some hosts restyle buttons with a transparent background, which wipes out the fill.
+- Clicking a tile shows that unit's details in one panel below the tiles: `confidence` as small text, then `rationale`, `doubted_premise`, and `recommendations` if any. Only one unit's details are shown at a time. Before any click, the panel says to click a unit.
 - A unit with verdict `error` shows its `error` text instead of rationale.
 
 **Footer**
@@ -32,7 +33,9 @@ Take every value from the same result the Markdown and JSON come from. Field nam
 
 - Neutral and flat: plain rounded cards on the host's surfaces, thin borders, no gradients or shadows.
 - Use the host's theme variables so it works in light and dark mode.
-- Colors carry meaning only: approve and passed = success, reject and rejected = danger, on hold = warning, error = danger with the error text shown. Everything else stays neutral.
+- Colors carry meaning only. Unit tiles: approve = blue, reject = red, error = gray with the error text shown. Resolution badge: passed = green, rejected = red, on hold = yellow, error = red. Everything else, including the card background, stays neutral.
+- Set these colors directly (fixed values for light and dark mode) rather than relying on mixing host variables, which may not render.
+- Confidence has no color of its own; it appears only as text in the details panel.
 - Do not imitate the screen from the series: no hexagonal or octagonal panel layout, no Japanese labels, no orange-on-black styling.
 
 ## Language
