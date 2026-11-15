@@ -1,46 +1,46 @@
-# MAGI — 3관점 다수결 심의 스킬
+# MAGI — Three-Perspective Majority Deliberation Skill
 
-하나의 안건을 세 관점이 **서로의 결과를 보지 못한 채** 평가하고, 투표 규칙에 따라 결의하는 Claude 스킬입니다. 한 관점에 치우친 판단을 막고, 반대 의견을 지우지 않고 남기는 것이 목적입니다. 최종 결정은 언제나 사용자가 하고, MAGI의 결의는 판단 근거로 씁니다.
+A Claude skill that has three perspectives evaluate one proposal **without seeing each other's results**, then resolves it by a voting rule. The goal is to keep a decision from leaning on a single viewpoint and to keep dissent on the record instead of erasing it. The final decision always belongs to the user; the MAGI resolution is input to that decision.
 
-A Claude skill that runs three independent reviewers (technical, safety, human) on one proposal and resolves it by 2/3 majority, or unanimity for high-stakes items. Korean-language skill.
+![MAGI deliberation flow](docs/flow.svg)
 
-![MAGI 심의 흐름](docs/flow.svg)
+> The skill itself (`skills/magi/SKILL.md`) is written in Korean. Claude follows it regardless of the language you use, and replies in the language of your request.
 
-## 구성
+## Roles
 
-| 역할 | 하는 일 |
+| Role | Responsibility |
 |---|---|
-| 진행자 (메인 대화) | 사실 수집, 에이전트 실행, 결의 집계와 보고 |
-| 안건 정리 에이전트 | 안건 문장, 등급, 전제, 프리셋, 후속 안건, 추가 정보 요청 |
-| MELCHIOR-1 · BALTHASAR-2 · CASPER-3 | 독립 심의 (판정, 확신도, 근거, 의심하는 전제) |
+| Moderator (main conversation) | Gathers facts, runs the agents, tallies the vote, reports |
+| Framing agent | Writes the proposal, grade, premises, preset, follow-up items, and questions for the user |
+| MELCHIOR-1 · BALTHASAR-2 · CASPER-3 | Independent review (verdict, confidence, rationale, doubted premise) |
 
-안건을 쓰는 쪽과 결과를 정리하는 쪽을 나눠서, 판단이 한곳에 몰리지 않게 했습니다.
+The agent that frames the proposal is separate from the one that summarizes the result, so judgment is not concentrated in one place.
 
-## 결의 규칙
+## Resolution rules
 
-| 등급 | 기준 | 규칙 |
+| Grade | Criteria | Rule |
 |---|---|---|
-| 일반 | 되돌릴 수 있고 영향 범위가 제한적 | 승인 2/3 이상이면 가결 |
-| 중대 | 되돌리기 어렵거나 안전·보안·데이터·큰 비용에 영향 | 만장일치면 가결, 갈리면 토론 1라운드 후 재투표, 그래도 갈리면 보류 |
+| Normal | Reversible, limited impact | Passes with 2/3 approval |
+| Critical | Hard to reverse, or affects safety, security, data, or significant cost | Passes only if unanimous; on a split, one debate round and a revote; still split → on hold |
 
-- 조건부 승인은 승인으로 세되, 조건을 모두 모아 **조건부 가결**로 표시합니다. 조건끼리 충돌하면 합치지 않고 사용자에게 고르게 합니다.
-- 한 유닛이라도 등급에 이의를 내면 중대로 올립니다.
-- 유닛 하나가 실패하면 두 유닛만으로 투표하지 않고 **오류**로 드러냅니다.
-- 전원이 같은 결론이면 공통 전제와 빠진 대안을 한 번 더 점검합니다.
-- 승인/거부로 답할 수 없는 질문은 투표 없이 **정보** 모드로 각 관점의 답을 보여 줍니다.
+- A conditional approval counts as approval, but all conditions are collected and the result is marked **conditionally passed**. Conflicting conditions are not merged; the user chooses.
+- If any unit objects to the grade, the item is raised to critical.
+- If a unit fails, the other two do not vote alone; the result is reported as an **error**.
+- When all three agree, shared premises and missing alternatives are checked once more.
+- Questions that cannot be answered with approve/reject go to **information** mode: each perspective answers, with no vote.
 
-## 프리셋
+## Presets
 
-| 프리셋 | MELCHIOR-1 | BALTHASAR-2 | CASPER-3 |
+| Preset | MELCHIOR-1 | BALTHASAR-2 | CASPER-3 |
 |---|---|---|---|
-| 기본 | 기술적 타당성 | 안전과 지속성 | 욕구와 가치 |
-| 윤리 | 결과주의 | 의무론 | 덕 윤리·관계 |
-| 코드 리뷰 | 정확성과 설계 | 보안·장애·호환성 | 가독성·유지보수 |
-| 개인 결정 | 성장과 역량 | 리스크와 생활의 안정 | 동기와 만족 |
+| Default | Technical feasibility | Safety and sustainability | Needs and value |
+| Ethics | Consequentialism | Deontology | Virtue ethics and relationships |
+| Code review | Correctness and design | Security, failure, compatibility | Readability and maintainability |
+| Personal decision | Growth and capability | Risk and stability | Motivation and satisfaction |
 
-안건 정리 에이전트가 고르고, 사용자가 지정하면 그것을 따릅니다. 맞는 프리셋이 없으면 서로 충돌할 수 있는 세 관점을 새로 짭니다.
+The framing agent picks the preset unless the user specifies one. If none fits, it designs three new perspectives that can genuinely conflict.
 
-## 설치
+## Installation
 
 **Claude Code**
 
@@ -50,30 +50,30 @@ mkdir -p ~/.claude/skills
 cp -r MAGI/skills/magi ~/.claude/skills/magi
 ```
 
-**Claude 앱**
+**Claude app**
 
-`skills/magi` 폴더를 zip으로 묶어 Claude 앱의 스킬 업로드 기능으로 올립니다.
+Zip the `skills/magi` folder and upload it with the Claude app's skill upload feature.
 
-## 사용 예
+## Usage
 
 ```
-/magi 팀 위키 검색을 키워드 검색에서 임베딩 검색으로 바꾼다
-/magi 다음 분기에 사이드 프로젝트를 오픈소스로 공개한다
-MAGI로 판단해줘: 이 PR을 이번 릴리스에 넣을지
+/magi Replace keyword search with embedding search in the team wiki
+/magi Open-source my side project next quarter
+Decide with MAGI: should this PR go into this release?
 ```
 
-서브에이전트를 띄울 수 있는 환경(Claude Code, Claude 앱의 에이전트 기능)에서 가장 잘 동작합니다. 그렇지 않으면 한 유닛씩 차례로 작성하고, 출력에 그 사실을 밝힙니다.
+Works best where subagents are available (Claude Code, or agent features in the Claude app). Otherwise the units are written one at a time, and the output says so.
 
-## 한계
+## Limitations
 
-세 유닛이 같은 모델에서 나오므로 진짜 설계 다양성은 아닙니다. 공통 원인 고장(common-mode failure)이 남습니다. 중요한 결정이라면 다른 자료나 다른 사람·다른 모델의 검토를 함께 받으세요.
+All three units come from the same model, so this is not true design diversity; common-mode failure remains. For important decisions, also get a review from other sources, other people, or another model.
 
-## 고지
+## Notice
 
-- 이 프로젝트는 비공식 개인 프로젝트이며, 『신세기 에반게리온』 및 그 권리자와 관련이 없습니다. 작품 속 MAGI 시스템에서 착안한 의사결정 방식만 다룹니다.
-- 작품의 그래픽, 로고, 이미지는 포함하지 않습니다. `docs/flow.svg`는 이 저장소에서 새로 그린 흐름도입니다.
-- 작품 스타일의 화면으로 결과를 보고 싶다면 [TomaszRewak/MAGI](https://github.com/TomaszRewak/MAGI)(MIT)를 참고할 수 있습니다. 이 저장소는 그 코드를 포함하지 않습니다.
+- This is an unofficial personal project and is not affiliated with *Neon Genesis Evangelion* or its rights holders. It only borrows the decision-making idea of the MAGI system from the series.
+- No artwork, logos, or images from the series are included. `docs/flow.svg` is an original diagram made for this repository.
+- If you want to view results in a series-style screen, see [TomaszRewak/MAGI](https://github.com/TomaszRewak/MAGI) (MIT). This repository does not include its code.
 
-## 라이선스
+## License
 
 [MIT](LICENSE)
