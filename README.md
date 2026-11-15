@@ -67,6 +67,10 @@ Decide with MAGI: should this PR go into this release?
 
 Works best where subagents are available (Claude Code, or agent features in the Claude app). Otherwise the units are written one at a time, and the output says so.
 
+## Result card
+
+Where Claude can draw interactive visuals in the conversation (for example, the Claude app), MAGI adds a small result card after the Markdown result: the resolution, the three units' verdicts, and each unit's rationale on click. Elsewhere, such as Claude Code in a terminal, the card is skipped and the Markdown result is unchanged. Say "no card" to turn it off. The card is specified in [`skills/magi/references/card.md`](skills/magi/references/card.md).
+
 ## JSON output (optional)
 
 In Claude Code, if the environment variable `MAGI_RESULTS_DIR` is set, MAGI also saves each result as a JSON file in that folder, so other tools can read it. The format is described in [`skills/magi/result.schema.json`](skills/magi/result.schema.json). Enum values are always English; free text follows the output language. Without the variable, nothing is written.

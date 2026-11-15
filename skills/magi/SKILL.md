@@ -182,6 +182,12 @@ In information mode, use this format instead of a resolution.
 **Where they diverge:** ...
 ```
 
+### Result card (optional)
+
+If a tool that renders interactive visuals inline in the conversation is available, draw a result card after the Markdown result, following `references/card.md` in this skill's folder. In short: the proposal and resolution at the top, the three units side by side with their verdicts, one unit's rationale shown when it is clicked, and the minority opinion at the bottom, in a neutral design that follows the host's theme. If `references/card.md` is not available, follow this summary.
+
+Without such a tool, skip the card: do not print its HTML or create a file for it. Also skip it when the user asks for no card. The Markdown result is always complete on its own.
+
 ## Output language
 
 These instructions are in English, but the result is written in the language of the user's request: a request in Korean gets a Korean result. If the user asks for a specific language, use that language instead. Translate the headings, labels, and verdict words of the formats above as well; keep only the unit names (MELCHIOR-1, BALTHASAR-2, CASPER-3) as they are. Subagents receive the same language instruction, so each unit writes in that language too.
