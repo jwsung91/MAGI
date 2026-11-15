@@ -1,6 +1,6 @@
 # Changelog
 
-The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly.
+The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
 ## [1.0.0]
 
@@ -13,3 +13,4 @@ First tagged release.
 - Follow-up proposals with per-unit verdicts in the Markdown result, the result card, and the JSON result.
 - Optional result card, JSON result (`result.schema.json`, format version 2), and JSON Lines progress log.
 - Claude Code plugin marketplace (`.claude-plugin/`) and a release zip for the Claude app.
+- Version check on pull requests and automatic tag and release on merge.

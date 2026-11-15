@@ -1,16 +1,22 @@
 name: Release
 
-# Push a tag v<version> (for example v1.0.0) whose version matches
-# .claude-plugin/plugin.json. The workflow checks the match, zips skills/magi
-# for upload to the Claude app, and publishes a GitHub Release with the zip.
+# Runs on every push to main. If the version in .claude-plugin/plugin.json has
+# no tag yet, it creates tag v<version> and a GitHub Release with the skill zip
+# (for upload to the Claude app) in this same job. Creating the tag here, not in
+# a separate tag-triggered workflow, matters: events made with GITHUB_TOKEN do
+# not start other workflow runs. If the tag already exists, the job does nothing.
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -18,44 +24,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check tag matches plugin.json version
+      - name: Read and check version
         id: version
         run: |
-          tag="${GITHUB_REF_NAME#v}"
-          manifest="$(jq -r .version .claude-plugin/plugin.json)"
-          if [ "$tag" != "$manifest" ]; then
-            echo "Tag v$tag does not match plugin.json version $manifest" >&2
-            exit 1
+          version="$(python3 .github/scripts/release_tools.py check-release)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if gh release view "v$version" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release v$version already exists; nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
-          echo "version=$tag" >> "$GITHUB_OUTPUT"
-
-      - name: Check skill description length
-        run: |
-          len="$(python3 - <<'EOF'
-          import re
-          s = open("skills/magi/SKILL.md", encoding="utf-8").read()
-          print(len(re.search(r'^description: "(.*)"$', s, re.M).group(1)))
-          EOF
-          )"
-          if [ "$len" -gt 200 ]; then
-            echo "SKILL.md description is $len characters (limit 200)" >&2
-            exit 1
-          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Build skill zip
+        if: steps.version.outputs.exists == 'false'
         run: |
           cd skills
           zip -r "../magi-${{ steps.version.outputs.version }}.zip" magi -x '*/__pycache__/*'
 
-      - name: Publish release
+      - name: Create tag and release
+        if: steps.version.outputs.exists == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          notes="$(awk -v v="${{ steps.version.outputs.version }}" '
-            $0 ~ "^## \\[?" v "\\]?" {found=1; next}
-            found && /^## / {exit}
-            found {print}
-          ' CHANGELOG.md)"
-          gh release create "$GITHUB_REF_NAME" "magi-${{ steps.version.outputs.version }}.zip" \
-            --title "MAGI ${{ steps.version.outputs.version }}" \
-            --notes "${notes:-See CHANGELOG.md}"
+          python3 .github/scripts/release_tools.py notes "$VERSION" > notes.md
+          gh release create "v$VERSION" "magi-$VERSION.zip" \
+            --target "$GITHUB_SHA" \
+            --title "MAGI $VERSION" \
+            --notes-file notes.md

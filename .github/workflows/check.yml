@@ -1,0 +1,23 @@
+name: Version check
+
+# Fails a pull request that changes skills/ without raising the version in
+# .claude-plugin/plugin.json (installed users would never receive the change),
+# lowers the version, or adds a version with no CHANGELOG section.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check version and changelog
+        run: python3 .github/scripts/release_tools.py check-pr "origin/${{ github.base_ref }}"
