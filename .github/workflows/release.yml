@@ -1,0 +1,61 @@
+name: Release
+
+# Push a tag v<version> (for example v1.0.0) whose version matches
+# .claude-plugin/plugin.json. The workflow checks the match, zips skills/magi
+# for upload to the Claude app, and publishes a GitHub Release with the zip.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches plugin.json version
+        id: version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          manifest="$(jq -r .version .claude-plugin/plugin.json)"
+          if [ "$tag" != "$manifest" ]; then
+            echo "Tag v$tag does not match plugin.json version $manifest" >&2
+            exit 1
+          fi
+          echo "version=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check skill description length
+        run: |
+          len="$(python3 - <<'EOF'
+          import re
+          s = open("skills/magi/SKILL.md", encoding="utf-8").read()
+          print(len(re.search(r'^description: "(.*)"$', s, re.M).group(1)))
+          EOF
+          )"
+          if [ "$len" -gt 200 ]; then
+            echo "SKILL.md description is $len characters (limit 200)" >&2
+            exit 1
+          fi
+
+      - name: Build skill zip
+        run: |
+          cd skills
+          zip -r "../magi-${{ steps.version.outputs.version }}.zip" magi -x '*/__pycache__/*'
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="$(awk -v v="${{ steps.version.outputs.version }}" '
+            $0 ~ "^## \\[?" v "\\]?" {found=1; next}
+            found && /^## / {exit}
+            found {print}
+          ' CHANGELOG.md)"
+          gh release create "$GITHUB_REF_NAME" "magi-${{ steps.version.outputs.version }}.zip" \
+            --title "MAGI ${{ steps.version.outputs.version }}" \
+            --notes "${notes:-See CHANGELOG.md}"

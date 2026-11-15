@@ -44,7 +44,22 @@ The framing agent picks the preset unless the user specifies one. If none fits, 
 
 ## Installation
 
-**Claude Code**
+Pick one of the two. If you use both the Claude app and Claude Code with the same account, skills enabled in the app also load in Claude Code, so installing both ways gives you two copies of MAGI.
+
+**Claude Code (plugin)**
+
+```
+/plugin marketplace add jwsung91/MAGI
+/plugin install magi@jwsung91
+```
+
+On Claude Code 2.1.275 or later, one line does both: `/plugin install magi --marketplace jwsung91/MAGI`. Updates arrive through the marketplace when a new version is released.
+
+**Claude app**
+
+Download `magi-<version>.zip` from the [latest release](https://github.com/jwsung91/MAGI/releases/latest) and upload it in Customize > Skills. To update, upload the new zip and remove the old copy if it remains.
+
+**Manual (Claude Code, no plugin)**
 
 ```bash
 git clone https://github.com/jwsung91/MAGI.git
@@ -52,9 +67,11 @@ mkdir -p ~/.claude/skills
 cp -r MAGI/skills/magi ~/.claude/skills/magi
 ```
 
-**Claude app**
+A manual copy does not update itself. If you switch to the plugin, delete `~/.claude/skills/magi` first.
 
-Zip the `skills/magi` folder and upload it with the Claude app's skill upload feature.
+## Versions
+
+The skill version is in [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) and follows Semantic Versioning; changes are listed in [CHANGELOG.md](CHANGELOG.md). Pushing a tag `v<version>` that matches it publishes a GitHub Release with the zip for the Claude app. The result JSON has its own format version (`version: 2` in `result.schema.json`), which changes only when the result format changes incompatibly; [MAGI-UI](https://github.com/jwsung91/MAGI-UI) follows that format version.
 
 ## Usage
 
@@ -64,6 +81,8 @@ Zip the `skills/magi` folder and upload it with the Claude app's skill upload fe
 Decide with MAGI: should this PR go into this release?
 /magi 이번 주에 운영 DB 스키마를 마이그레이션한다   # answered in Korean
 ```
+
+Installed as a Claude Code plugin, the command is namespaced: `/magi:magi <proposal>`. Asking in words ("decide with MAGI: …") works either way.
 
 Works best where subagents are available (Claude Code, or agent features in the Claude app). Otherwise the units are written one at a time, and the output says so.
 

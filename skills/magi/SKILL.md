@@ -1,6 +1,6 @@
 ---
 name: "magi"
-description: "MAGI-style decision deliberation: three perspectives (technical, safety, human) judge independently, resolved by 2/3 majority, or unanimity for critical items. Use for /magi, 'decide with MAGI', 'MAGI로 판단해줘', go/no-go calls, and design reviews."
+description: "Three-perspective MAGI deliberation: technical, safety and human views judge independently; 2/3 majority, or unanimity if critical. Use for /magi, 'decide with MAGI', 'MAGI로 판단해줘', go/no-go calls."
 ---
 
 # MAGI — Three-Perspective Majority Deliberation
