@@ -186,6 +186,41 @@ In information mode, use this format instead of a resolution.
 
 These instructions are in English, but the result is written in the language of the user's request: a request in Korean gets a Korean result. If the user asks for a specific language, use that language instead. Translate the headings, labels, and verdict words of the formats above as well; keep only the unit names (MELCHIOR-1, BALTHASAR-2, CASPER-3) as they are. Subagents receive the same language instruction, so each unit writes in that language too.
 
+## 6. JSON output (optional, for viewers)
+
+Write a JSON copy of the result only in these cases:
+- in Claude Code, when the environment variable `MAGI_RESULTS_DIR` is set (check with `echo "$MAGI_RESULTS_DIR"` at the start of the run);
+- when the user asks for JSON.
+
+Otherwise skip this section entirely.
+
+Rules:
+- Build the result once, then derive both the Markdown and the JSON from it, so the two never disagree.
+- Enum values are always the English values below, whatever the output language. Free text (agenda, rationale, perspective, and so on) is written in the output language.
+- In Claude Code, save to `$MAGI_RESULTS_DIR/YYYYMMDD-HHMMSS-<short-slug>.json` (create the folder if needed), show the Markdown result as usual, and add one line with the file path. Where files cannot be written, output the JSON as a code block only when the user asked for it.
+- The full schema is `result.schema.json` next to this file. The fields:
+
+```
+version: 2
+mode: "deliberation" | "information"
+agenda: main proposal (or the question)
+grade: "normal" | "critical"            (deliberation)
+grade_raised: true if raised by a grade objection
+preset, framing, debate, minority: text (optional)
+verdict: "passed" | "rejected" | "on_hold" | "error"   (deliberation)
+approve_count: 0-3
+follow_ups: [{agenda, grade, verdict, approve_count}]  (at most 2)
+units: {melchior, balthasar, casper}, each:
+  perspective: text
+  verdict: "approve" | "reject" | "error"   (main proposal)
+  confidence: "high" | "medium" | "low"
+  rationale: [text] (at most 3)
+  flip_condition, doubted_premise: text
+  recommendations: [text]
+  answer: text                              (information mode)
+  error: text                               (when verdict is "error")
+```
+
 ## On limitations
 
 If the three units come from the same model, this is not true design diversity. Just as the original MAGI came from one person's personality, common-mode failure remains. For important proposals, add one line at the end of the result recommending a review from other sources, other people, or another model as well.
