@@ -30,6 +30,14 @@ Why framing is separated from the moderator: how the proposal is worded and whic
 - If the user specified a preset, note it.
 - The moderator does not decide the proposal wording, how premises are interpreted, the grade, or the preset.
 
+### Input isolation (all subagents)
+
+Subagents may be able to see context the moderator did not hand them (the user's memory, earlier conversation, files). If they use it, the moderator's fact selection is bypassed, the three units no longer start from the same input, and private details can surface in the result. So every subagent prompt (the framing agent and all three units) includes this instruction verbatim, in the output language:
+
+> Use only the material in this prompt. Do not use the user's memory, earlier conversation, or any other context, even if you can see it. If information you need is missing, write it as an unconfirmed premise instead of filling it in.
+
+If a subagent's output still relies on a fact that is not in its input, treat it as a format break: re-run that subagent once with the instruction restated. Do not silently edit its rationale; the output is shown as it is.
+
 ### Framing agent
 
 Takes the original request, the list of facts, and (if any) the user-specified preset, and produces the following.
@@ -47,6 +55,8 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 ### Moderator: handling the result
 
 - If there are questions for the user, ask them **all at once** before deliberation (with a question tool if available). Add the answers to the list of facts and run the framing agent again. Do not proceed on assumptions while things remain ambiguous.
+- **Every round of answers is followed by re-framing.** Do not append answers to the previous framing result and pass it to the units directly; the units always receive a framing result produced after the latest answers.
+- If the re-framed result has new questions for the user, ask them again in the same way. A precise result is worth another round. Stop after 3 rounds of questions; anything still open after that stays as [assumption] and is stated in the result.
 - If the user does not answer or says "just go ahead", leave those variables as [assumption] and proceed, stating so in the result.
 - If the framing agent asks for something to be checked from sources, the moderator checks it and adds it to the list of facts.
 - The moderator **does not rewrite** the framing result. If a part clearly contradicts what the user said, point out only that contradiction and run the framing agent once more.
@@ -69,6 +79,7 @@ Independence is the core.
 - If subagents can be launched, run the three units as **separate agents** that cannot see each other's results.
 - If not, write one unit at a time, without referring to or aligning with earlier units' conclusions.
 - Pass the framing result (proposal, premises, preset perspectives, options outside the binary) to the three units unchanged. If there are follow-up proposals, each unit gives a separate verdict on the main proposal and on each follow-up.
+- Each unit prompt includes the input isolation instruction (section 1).
 
 | Unit | Perspective | Main questions |
 |---|---|---|
@@ -152,7 +163,15 @@ Decide in this order.
 | CASPER-3 | Approve | Medium | ... | ... |
 
 **Resolution:** passed / rejected / on hold / error (approve n/3)
-**Follow-up resolutions:** (if any, per proposal)
+**Follow-up resolutions:** (if any) for each follow-up proposal, its resolution and a per-unit table, so the user can see why each unit voted as it did:
+
+| Follow-up n | Verdict | Confidence | Key rationale |
+|---|---|---|---|
+| MELCHIOR-1 | ... | ... | ... (1-2 points) |
+| BALTHASAR-2 | ... | ... | ... |
+| CASPER-3 | ... | ... | ... |
+
+Then **Resolution:** passed / rejected / on hold (approve n/3).
 **Recommendations:** (if any, per unit; non-binding. If units recommend modified versions of the proposal, list them as candidates for a separate decision without merging them)
 **Debate round:** (if held) who changed position on what new argument, or that no one changed
 
@@ -184,7 +203,12 @@ In information mode, use this format instead of a resolution.
 
 ### Result card (optional)
 
-If a tool that renders interactive visuals inline in the conversation is available, draw a result card after the Markdown result, following `references/card.md` in this skill's folder. In short: the proposal and resolution at the top, the three units side by side with their verdicts, one unit's rationale shown when it is clicked, and the minority opinion at the bottom, in a neutral design that follows the host's theme. Unit tiles are filled with their verdict color (approve blue, reject red); the resolution badge is passed green, rejected red, on hold yellow; confidence appears only as text in the details. If `references/card.md` is not available, follow this summary.
+If a tool that renders interactive visuals inline in the conversation is available, draw a result card after the Markdown result, following `references/card.md` in this skill's folder. In short: the proposal and resolution at the top, the three units side by side with their verdicts, one unit's rationale shown when it is clicked, and the minority opinion at the bottom, in a neutral design that follows the host's theme. Unit tiles are filled with their verdict color (approve blue, reject red); the resolution badge is passed green, rejected red, on hold yellow; confidence appears only as text in the details. Follow-up proposals get their own rows below the main units: the follow-up text, its resolution badge, and three small unit chips filled with each unit's verdict color; clicking a chip shows that unit's rationale for that follow-up in the same details area. If `references/card.md` is not available, follow this summary.
+
+Implementation rules (hosts pre-style form controls, which can silently erase colors):
+- Build clickable tiles and chips as `<div role="button" tabindex="0">`, not `<button>`; handle Enter/Space as well as click.
+- Put fill, text, and border colors in inline `style`, each with a fallback: `background: var(--bg-danger, #FCEBEB); color: var(--text-danger, #A32D2D)` for reject, `var(--bg-accent, #E6F1FB)` / `var(--text-accent, #185FA5)` for approve, `var(--bg-success, #EAF3DE)` / `var(--text-success, #3B6D11)` for passed, `var(--bg-warning, #FAEEDA)` / `var(--text-warning, #854F0B)` for on hold.
+- Show selection by changing the tile's own border color (keep a 2px transparent border at rest so the layout does not shift), not with `outline`.
 
 Without such a tool, skip the card: do not print its HTML or create a file for it. Also skip it when the user asks for no card. The Markdown result is always complete on its own.
 
@@ -222,7 +246,8 @@ grade_raised: true if raised by a grade objection
 preset, framing, debate, minority: text (optional)
 verdict: "passed" | "rejected" | "on_hold" | "error"   (deliberation)
 approve_count: 0-3
-follow_ups: [{agenda, grade, verdict, approve_count}]  (at most 2)
+follow_ups: [{agenda, grade, verdict, approve_count, units}]  (at most 2)
+  units: {melchior, balthasar, casper}, each: verdict, confidence, rationale (at most 3)
 units: {melchior, balthasar, casper}, each:
   perspective: text
   verdict: "approve" | "reject" | "error"   (main proposal)
