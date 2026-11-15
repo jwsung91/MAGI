@@ -133,9 +133,15 @@ Decide in this order.
 4. **Vote:** count approvals. Follow-up proposals are resolved separately by the same rules.
    - Normal proposal: 2 or more approvals → **passed**; otherwise **rejected**.
    - Critical proposal: all 3 approve → **passed**; all 3 reject → **rejected**; a split opens a debate round.
-5. **Debate round (only when a critical proposal is split):** show each unit the other two units' verdicts and rationale, and let it give a verdict once more. Debate is limited to 1 round.
-   - To change position, a unit must cite a **new argument** raised by another unit. "Because the majority saw it that way" is not an argument. This prevents conformity pressure from breaking independence.
-   - A unit that changed position states what made it change.
+5. **Debate round (only when a critical proposal is split):** show each unit its own round-1 output and the other two units' full round-1 outputs (verdict, key rationale, what would flip the verdict, doubted premise, recommendations), and let it give a verdict once more. Debate is limited to 1 round. Each debate prompt also includes the input isolation instruction (section 1).
+   - **Every unit answers the other side.** Each unit, majority as well as minority, names the strongest argument of each unit that voted the other way and either rebuts it or concedes it, saying whether that changes its verdict. Leaving an argument unanswered is not a rebuttal. Without this rule only the minority unit has to deal with opposing arguments, while the majority keeps its position without engaging, so the pressure to move falls on one side only.
+   - To change position, a unit must cite a **new argument** raised by another unit: quote it, name the unit it came from, and say why it changes the verdict. "Because the majority saw it that way" is not an argument. This prevents conformity pressure from breaking independence.
+   - **The moderator checks every position change.** This is a check of traceability, not of merit: the moderator does not judge whether the argument is persuasive. A change is accepted only if both hold:
+     1. the cited argument appears, in substance, in the named unit's round-1 output (an argument that first appears in round 2 fails this);
+     2. it does not already appear in the changing unit's own round-1 output (an argument the unit had already weighed when it voted is not new to it).
+
+     If a change fails, re-run that unit once, stating which condition failed. If it fails again, the change is not accepted: the unit's round-1 verdict stands, and the result records the rejected change and the reason. Do not rewrite the unit's output to make it pass.
+   - A unit that keeps its position needs no check, but its rebuttals and concessions are recorded.
    - If the revote is still split, the result is **on hold** (until the rejecting unit's concerns are resolved).
    - **What on hold means:** on hold is not a verdict that the proposal is wrong, and "do nothing" is not its default answer. For a real action, it means the action is not carried out until the rejecting unit's concerns are resolved. For a question with nothing to carry out, it means no conclusion: present each position side by side.
 - **Unanimity check:** if all three units reached the same conclusion (all approve or all reject), suspect that they share the same blind spot because they come from the same model, check the following two points, and record the result.
@@ -173,7 +179,7 @@ Decide in this order.
 
 Then **Resolution:** passed / rejected / on hold (approve n/3).
 **Recommendations:** (if any, per unit; non-binding. If units recommend modified versions of the proposal, list them as candidates for a separate decision without merging them)
-**Debate round:** (if held) who changed position on what new argument, or that no one changed
+**Debate round:** (if held) for each unit: its round-2 verdict; its answer to each opposing unit's strongest argument (rebutted / conceded, one line); if it changed position, the argument it cited (source unit, quote) and whether the moderator's check accepted the change, with the reason if not. If no one changed, say so.
 
 **Unanimity check:** (if applicable) shared premise, missing alternative
 
@@ -282,7 +288,7 @@ In Claude Code, when `MAGI_RESULTS_DIR` is set, also record the run as it happen
   | `framing_done` | after framing (again after re-framing) | `mode`, `agenda`, `follow_ups`, `grade`, `preset`, `questions` |
   | `questions_answered` | after the user answers | `answers` |
   | `units_started` | before running the units | `round` (1, or 2 for debate) |
-  | `units_done` | when the units' results arrive (all three at once) | `round`, and per unit `verdict` and `confidence` |
+  | `units_done` | when the units' results arrive (all three at once) | `round`, and per unit `verdict` and `confidence`; in round 2 also `changed` and, if changed, `change_accepted` |
   | `final` | at the end | `result`: the full version 2 result object |
   | `error` | on failure | `stage`, `message` |
 
