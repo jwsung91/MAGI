@@ -1,179 +1,183 @@
 ---
 name: "magi"
-description: "MAGI 방식 의사결정 심의: 세 관점(기술·안전·인간)이 독립적으로 판단하고 2/3 다수결, 중대 안건은 만장일치로 결의. /magi, 'MAGI로 판단해줘', go/no-go·설계 검토 시 사용."
+description: "MAGI-style decision deliberation: three perspectives (technical, safety, human) judge independently, resolved by 2/3 majority, or unanimity for critical items. Use for /magi, 'decide with MAGI', 'MAGI로 판단해줘', go/no-go calls, and design reviews."
 ---
 
-# MAGI — 3관점 다수결 심의
+# MAGI — Three-Perspective Majority Deliberation
 
-하나의 안건을 세 개의 서로 다른 관점이 **독립적으로** 평가하고, 투표 규칙에 따라 결의한다. 목적은 한 관점에 치우친 판단을 막고, 반대 의견을 지우지 않고 남기는 것이다. 최종 결정은 언제나 사용자의 몫이며, MAGI의 결의는 판단 근거로 제시한다.
+Three different perspectives evaluate one proposal **independently**, and the result is resolved by a voting rule. The purpose is to keep a judgment from leaning on a single viewpoint and to keep dissent on the record instead of erasing it. The final decision always belongs to the user; the MAGI resolution is presented as input to that decision.
 
-## 역할
+## Roles
 
-| 역할 | 누가 | 하는 일 |
+| Role | Who | Responsibility |
 |---|---|---|
-| 진행자 | 메인 대화의 Claude | 재료 수집, 각 에이전트 실행, 결의 집계, 보고 |
-| 안건 정리 에이전트 | 별도 서브에이전트 | 안건 문장, 전제, 등급, 프리셋 결정 |
-| MELCHIOR-1 · BALTHASAR-2 · CASPER-3 | 별도 서브에이전트 3개 | 독립 심의 |
+| Moderator | Claude in the main conversation | Gathers material, runs each agent, tallies the vote, reports |
+| Framing agent | Separate subagent | Decides the proposal wording, premises, grade, and preset |
+| MELCHIOR-1 · BALTHASAR-2 · CASPER-3 | Three separate subagents | Independent review |
 
-안건 정리를 진행자와 분리하는 이유: 안건을 어떻게 쓰고 어떤 전제를 넣느냐가 결과를 가장 크게 좌우한다. 결과를 정리하는 쪽이 안건까지 쓰면 판단이 한곳에 몰린다.
+Why framing is separated from the moderator: how the proposal is worded and which premises go into it affect the outcome more than anything else. If the party that summarizes the result also writes the proposal, judgment is concentrated in one place.
 
-## 1. 안건 정리
+## 1. Framing the proposal
 
-### 진행자: 재료 수집
+### Moderator: gathering material
 
-- 사용자의 요청 원문을 **그대로** 둔다. 요약하거나 다시 쓰지 않는다.
-- 판단에 필요한 사실(코드, 문서, 수치)이 있으면 먼저 확인한다. 추측으로 채우지 않는다.
-- 사실은 사용자가 **지정한 대상**(모델, 날짜, 선택지)에 대해서만 수집한다. 사용자가 묻지 않은 대안(상위 모델, 다른 제품)의 정보는 수집하지 않는다. 대안 정보가 재료에 섞이면 안건이 대안 비교로 번진다.
-- 대화·메모리·파일에서 알고 있는 관련 사정을 **사실 목록**으로만 정리한다. 해석이나 평가는 붙이지 않는다. (예: "이사 날짜가 3주 뒤로 잡혀 있다" O / "요즘 일정이 빡빡하다" X)
-- 사용자가 프리셋을 지정했으면 함께 적는다.
-- 진행자는 안건 문장, 전제 해석, 등급, 프리셋을 정하지 않는다.
+- Keep the user's original request **verbatim**. Do not summarize or rewrite it.
+- If facts are needed for the decision (code, documents, numbers), check them first. Do not fill gaps with guesses.
+- Collect facts only about the **targets the user specified** (model, date, options). Do not collect information about alternatives the user did not ask about (a higher-tier model, a different product). Once alternative information enters the material, the proposal drifts into a comparison of alternatives.
+- Summarize relevant circumstances known from the conversation, memory, or files as a **list of facts** only. Do not attach interpretation or evaluation. (e.g. "The move is scheduled three weeks from now" ✓ / "The schedule is tight these days" ✗)
+- If the user specified a preset, note it.
+- The moderator does not decide the proposal wording, how premises are interpreted, the grade, or the preset.
 
-### 안건 정리 에이전트
+### Framing agent
 
-원문, 사실 목록, (있다면) 사용자 지정 프리셋을 받아 다음을 낸다.
+Takes the original request, the list of facts, and (if any) the user-specified preset, and produces the following.
 
-1. **모드:** 심의 / 정보. 승인/거부로 바꾸면 질문의 뜻이 달라지면(설명, 비교, 열린 질문) 정보 모드로 한다(4절).
-2. **안건:** 승인/거부로 답할 수 있는 한 문장. 승인과 거부가 각각 무엇을 뜻하는지 겹치지 않게 명시한다.
-   - **안건 하나에 행동 하나.** 따로 결정할 수 있는 행동(예: 기기 구매와 기존 기기 판매, 쉴지와 무엇으로 쉴지)은 묶지 않는다. 가장 핵심인 행동을 **본 안건**으로, 나머지는 **후속 안건**(최대 2개)으로 분리한다.
-   - **사용자가 지정한 대상은 그대로 쓴다.** 사용자가 이름을 댄 모델·날짜·선택지를 '계열'이나 '유사 항목'으로 넓히지 않는다. 대안은 6번(이분법 밖의 선택지)에 이름만 적는다.
-3. **등급:** 일반 / 중대와 이유 한 줄(2절).
-4. **전제:** 확인된 사실 / 가정 / 미확인으로 나눈다. 가정은 안건 정리 에이전트가 채운 것이고, 반드시 가정이라고 표시한다. 주어지지 않은 중요한 변수는 미확인으로 적는다. 결론을 가를 수 있는데 사용자만 답할 수 있는 변수는 [가정]으로 채우지 말고 7번 추가 정보 요청으로 보낸다.
-5. **프리셋:** 고른 프리셋, 고른 이유 한 줄, 차선 후보 하나. 사용자가 지정했으면 그대로 따른다. 맞는 프리셋이 없으면 세 관점을 새로 짠다(3절).
-6. **이분법 밖의 선택지:** 안건을 승인/거부로 만들면서 빠진 선택지(축소안, 단계적 도입, 다른 방식, 시점 변경).
-7. **추가 정보 요청:** 미확인 변수 중 **결론을 가를 수 있고 사용자만 답할 수 있는 것**을 최대 3개 질문으로 낸다. 각 질문에 그 답이 결론을 어떻게 바꿀 수 있는지 한 줄을 붙인다. 자료로 확인할 수 있는 것(가격, 사양)은 사용자에게 묻지 않고 진행자에게 확인을 요청한다. 없으면 '없음'.
+1. **Mode:** deliberation / information. If turning the question into approve/reject would change its meaning (an explanation, a comparison, an open question), use information mode (section 4).
+2. **Proposal:** one sentence that can be answered with approve or reject. State what approve and what reject each mean, without overlap.
+   - **One action per proposal.** Do not bundle actions that can be decided separately (e.g. buying a new device and selling the old one; whether to take time off and how to take it). Make the most essential action the **main proposal** and split the rest into **follow-up proposals** (at most 2).
+   - **Use the targets the user specified as they are.** Do not widen a model, date, or option the user named into a "family" or "similar items". Alternatives are listed by name only under item 6 (options outside the binary).
+3. **Grade:** normal / critical, with a one-line reason (section 2).
+4. **Premises:** split into confirmed facts / assumptions / unconfirmed. Assumptions are what the framing agent filled in, and must be marked as assumptions. Write important variables that were not given as unconfirmed. Variables that could decide the outcome and that only the user can answer must not be filled in as [assumption]; send them to item 7, questions for the user.
+5. **Preset:** the chosen preset, a one-line reason, and one runner-up. If the user specified one, follow it. If no preset fits, design three new perspectives (section 3).
+6. **Options outside the binary:** options that were dropped by turning the proposal into approve/reject (a reduced version, phased adoption, a different method, a change of timing).
+7. **Questions for the user:** from the unconfirmed variables, those that **could decide the outcome and only the user can answer**, as at most 3 questions. Attach one line to each question on how its answer could change the outcome. Do not ask the user about things that can be checked from sources (prices, specs); ask the moderator to check them instead. If there are none, write "none".
 
-### 진행자: 받은 결과 처리
+### Moderator: handling the result
 
-- 추가 정보 요청이 있으면 심의 전에 사용자에게 **한 번에** 묻는다(질문 도구가 있으면 그것으로). 답을 사실 목록에 더해 안건 정리 에이전트를 다시 돌린다. 애매한 채로 가정을 세워 진행하지 않는다.
-- 사용자가 답하지 않거나 "그냥 진행해"라고 하면, 해당 변수를 [가정]으로 두고 진행하되 결과에 그 사실을 밝힌다.
-- 안건 정리 에이전트가 자료 확인을 요청하면 진행자가 확인해 사실 목록에 더한다.
-- 진행자는 안건 정리 결과를 **고쳐 쓰지 않는다.** 사용자의 말과 명백히 어긋나는 부분이 있으면, 어긋나는 지점만 짚어서 안건 정리 에이전트를 한 번 다시 돌린다.
-- 서브에이전트를 쓸 수 없으면 진행자가 직접 안건을 정리하되, 출력에 "안건 정리: 진행자 직접"이라고 밝힌다.
+- If there are questions for the user, ask them **all at once** before deliberation (with a question tool if available). Add the answers to the list of facts and run the framing agent again. Do not proceed on assumptions while things remain ambiguous.
+- If the user does not answer or says "just go ahead", leave those variables as [assumption] and proceed, stating so in the result.
+- If the framing agent asks for something to be checked from sources, the moderator checks it and adds it to the list of facts.
+- The moderator **does not rewrite** the framing result. If a part clearly contradicts what the user said, point out only that contradiction and run the framing agent once more.
+- If subagents are not available, the moderator frames the proposal directly and states "Framing: moderator directly" in the output.
 
-## 2. 등급 판정
+## 2. Grade
 
-| 등급 | 기준 | 결의 규칙 |
+| Grade | Criteria | Resolution rule |
 |---|---|---|
-| 일반 | 되돌릴 수 있고 영향 범위가 제한적 | 2/3 다수결 |
-| 중대 | 되돌리기 어렵거나, 안전·보안·데이터 손실·운영 환경·큰 비용에 영향 | 만장일치면 가결 (전원 거부면 부결, 찬반이 갈리면 토론 1라운드 후 재투표, 그래도 갈리면 보류) |
+| Normal | Reversible and limited in impact | 2/3 majority |
+| Critical | Hard to reverse, or affects safety, security, data loss, production environments, or large costs | Passes if unanimous (rejected if all reject; on a split, one debate round then a revote; still split → on hold) |
 
-등급은 안건 정리 에이전트가 정하고 이유를 한 줄로 밝힌다. 애매하면 중대로 본다.
+The framing agent decides the grade and gives a one-line reason. When in doubt, treat it as critical.
 
-## 3. 세 유닛의 독립 심의
+## 3. Independent review by the three units
 
-독립성이 핵심이다.
-- 서브에이전트를 띄울 수 있으면 세 유닛을 **각각 별도 에이전트로**, 서로의 결과를 보지 못하게 실행한다.
-- 그럴 수 없으면 한 유닛씩 차례로 작성하되, 앞 유닛의 결론을 참조하거나 맞추지 않는다.
-- 세 유닛에게는 안건 정리 결과(안건, 전제, 프리셋 관점, 이분법 밖의 선택지)를 고치지 않고 그대로 넘긴다. 후속 안건이 있으면 유닛은 본 안건과 후속 안건에 각각 판정을 낸다.
+Independence is the core.
+- If subagents can be launched, run the three units as **separate agents** that cannot see each other's results.
+- If not, write one unit at a time, without referring to or aligning with earlier units' conclusions.
+- Pass the framing result (proposal, premises, preset perspectives, options outside the binary) to the three units unchanged. If there are follow-up proposals, each unit gives a separate verdict on the main proposal and on each follow-up.
 
-| 유닛 | 관점 | 주로 묻는 것 |
+| Unit | Perspective | Main questions |
 |---|---|---|
-| **MELCHIOR-1** (과학자) | 기술적 타당성 | 근거가 맞는가? 동작하는가? 복잡도·성능·정확성은? 더 단순한 대안은? |
-| **BALTHASAR-2** (보호자) | 안전과 지속성 | 실패하면 무엇이 망가지는가? 되돌릴 수 있는가? 운영·유지보수 부담은? 누가 피해를 보는가? |
-| **CASPER-3** (인간) | 욕구와 가치 | 사용자·이해관계자가 정말 원하는 것인가? 동기와 직관은 무엇을 말하는가? 들인 노력만큼 가치가 있는가? |
+| **MELCHIOR-1** (scientist) | Technical feasibility | Is the evidence right? Does it work? Complexity, performance, correctness? Is there a simpler alternative? |
+| **BALTHASAR-2** (guardian) | Safety and sustainability | What breaks if it fails? Can it be reversed? Operations and maintenance burden? Who gets hurt? |
+| **CASPER-3** (human) | Needs and value | Is this what the user and stakeholders really want? What do motivation and intuition say? Is it worth the effort? |
 
-### 프리셋
+### Presets
 
-위 표는 **기본** 프리셋이다. 유닛 이름은 그대로 두고, 안건 종류에 따라 관점만 바꾼다. 관점 구성이 안건과 맞지 않으면 세 유닛이 같은 쪽으로 쏠리거나 중요한 입장이 통째로 빠진다.
+The table above is the **default** preset. Keep the unit names and change only the perspectives depending on the kind of proposal. If the perspectives do not fit the proposal, the three units lean the same way or an important position is missing entirely.
 
-| 프리셋 | MELCHIOR-1 | BALTHASAR-2 | CASPER-3 |
+| Preset | MELCHIOR-1 | BALTHASAR-2 | CASPER-3 |
 |---|---|---|---|
-| 기본 (엔지니어링·제품) | 기술적 타당성 | 안전과 지속성 | 욕구와 가치 |
-| 윤리 | 결과주의: 결과의 총합이 나아지는가 | 의무론: 권리·의무, 결과와 상관없이 해서는 안 되는 일인가 | 덕 윤리·관계: 이 선택을 하는 사람은 어떤 사람이 되는가, 관계와 감정 |
-| 코드 리뷰 | 정확성과 설계 | 보안·장애·호환성 | 읽고 고칠 동료의 입장: 가독성·유지보수 |
-| 개인 결정 (커리어 등) | 성장과 역량 | 리스크와 생활의 안정 | 동기와 만족 |
-| 원작 | 과학자: 이해와 기술 발전 | 어머니: 보호와 안녕 | 여성: 사랑, 꿈, 욕망 |
+| Default (engineering, product) | Technical feasibility | Safety and sustainability | Needs and value |
+| Ethics | Consequentialism: does the sum of outcomes improve? | Deontology: rights and duties; is this something that must not be done regardless of outcome? | Virtue ethics and relationships: what kind of person does this choice make you; relationships and emotions |
+| Code review | Correctness and design | Security, failure, compatibility | The colleague who will read and change it: readability, maintainability |
+| Personal decision (career, etc.) | Growth and capability | Risk and stability of life | Motivation and satisfaction |
+| Original | Scientist: understanding and technological progress | Mother: protection and well-being | Woman: love, dreams, desire |
 
-프리셋은 안건 정리 에이전트가 고른다(1절). 사용자가 지정하면 그것을 따른다. 맞는 프리셋이 없으면 안건 정리 에이전트가 안건에 맞춰 세 관점을 새로 짠다. 이때 세 관점은 서로 충돌할 수 있게 고른다.
+The framing agent chooses the preset (section 1). If the user specifies one, follow it. If no preset fits, the framing agent designs three new perspectives for the proposal, chosen so that they can conflict with each other.
 
-각 유닛은 다음을 낸다.
-- **판정:** 승인 / 조건부 승인 / 거부 (조건부 승인이면 조건을 확인 가능한 형태로 구체적으로 적는다)
-- **확신도:** 높음 / 중간 / 낮음
-- **핵심 근거:** 최대 3개
-- **판정을 뒤집을 조건:** 무엇이 바뀌면 반대로 투표할지
-- **의심하는 전제:** 안건의 전제 중 자기 관점에서 가장 의심스러운 것 하나와, 그 전제가 틀렸을 때 판정이 어떻게 바뀌는지
-- **등급 이의:** (있을 때만) 등급 판단이 틀렸다고 보면 이유를 적는다. (예: "되돌릴 수 있다는 판단이 틀렸다")
+Each unit produces:
+- **Verdict:** approve / conditional approve / reject (for conditional approve, state the conditions concretely in a checkable form)
+- **Confidence:** high / medium / low
+- **Key rationale:** at most 3 points
+- **What would flip the verdict:** what would have to change for the unit to vote the other way
+- **Doubted premise:** the one premise the unit finds most doubtful from its perspective, and how its verdict would change if that premise were wrong
+- **Grade objection:** (only if any) if the unit thinks the grade is wrong, give the reason (e.g. "the judgment that this is reversible is wrong")
 
-전제 의심은 관점별로 나눈다. 세 유닛이 같은 전제를 그대로 받아들이면 입력 단계에서 공통 원인 고장이 생기기 때문이다.
-- MELCHIOR-1: 기술적 전제 (성능, 동작 방식, 데이터의 정확성)
-- BALTHASAR-2: 안전·운영 전제 (무엇이 안전 상태인가, 실패의 영향 범위)
-- CASPER-3: 요구 전제 (정말 풀 가치가 있는 문제인가, 누가 원하는가)
+Premise doubts are split by perspective. If all three units accept the same premises unchanged, a common-mode failure arises at the input stage.
+- MELCHIOR-1: technical premises (performance, how things work, accuracy of data)
+- BALTHASAR-2: safety and operational premises (what is the safe state, the blast radius of failure)
+- CASPER-3: requirement premises (is this a problem worth solving, who wants it)
 
-다른 프리셋을 쓰면 전제 의심 영역도 각 유닛의 관점에 맞춰 바꾼다.
+With other presets, adapt the premise-doubt areas to each unit's perspective.
 
-## 4. 결의
+## 4. Resolution
 
-아래 순서대로 판정한다.
+Decide in this order.
 
-1. **오류:** 유닛이 실패했거나, 답이 없거나, 형식이 깨졌으면 그 유닛만 한 번 다시 실행한다. 그래도 실패하면 결의는 **오류**다. 남은 두 유닛만으로 투표하지 않는다. 고장을 가리지 말고 드러낸다.
-2. **정보 모드:** 안건이 승인/거부로 답할 수 없는 질문이면 투표하지 않는다. 각 유닛의 답과 공통점, 갈리는 지점만 제시한다.
-3. **등급 이의:** 일반 안건에 한 유닛이라도 등급 이의를 냈으면 중대로 올려 결의한다('애매하면 중대' 원칙).
-4. **투표:** 조건부 승인은 표를 셈 때 승인으로 센다. 다만 가결된 안건에 조건부 승인이 하나라도 있으면 결의는 **조건부 가결**이고, 모든 조건을 합쳐 적는다. 후속 안건도 같은 규칙으로 따로 결의한다.
-   - 일반 안건: 승인 2표 이상이면 **가결**, 아니면 **부결**.
-   - 중대 안건: 3표 모두 승인이면 **가결**, 3표 모두 거부면 **부결**, 찬반이 갈리면 토론 라운드를 연다.
-   - **조건 충돌:** 유닛들의 조건이 서로 맞지 않으면(예: 한 유닛은 옵션을 지정하고 다른 유닛은 용도를 보고 고르자고 함) 진행자가 합치지 않는다. 충돌을 그대로 표시하고 사용자가 고르게 한다.
-5. **토론 라운드 (중대 안건에서 찬반이 갈릴 때만):** 각 유닛에게 다른 두 유닛의 판정과 근거를 보여주고 한 번만 다시 판정하게 한다. 토론은 1라운드로 제한한다.
-   - 입장을 바꾸려면 다른 유닛이 낸 **새 근거**를 들어야 한다. "다수가 그렇게 봤으니까"는 근거가 아니다. 동조 압력으로 독립성이 무너지는 것을 막기 위해서다.
-   - 입장을 바꾼 유닛은 무엇 때문에 바꿨는지 적는다.
-   - 재투표에서도 찬반이 갈리면 **보류**(거부한 유닛의 우려가 해소될 때까지).
-- **만장일치 경계:** 세 유닛이 같은 결론을 냈다면(전원 승인이든 전원 거부든), 같은 모델이라 같은 맹점을 공유했을 가능성을 의심하고 다음 두 가지를 점검해 결과를 적는다.
-  1. **공통 전제:** 세 유닛의 판단이 같은 전제에 기대고 있지 않은가? 특히 안건 정리 에이전트가 채운 가정이라면, 그 전제가 틀렸을 때 결의가 뒤집히는지 적는다.
-  2. **빠진 대안:** 안건을 '하느냐 마느냐'로만 보느라 그 사이의 선택지(축소안, 단계적 도입, 다른 방식)를 놓치지 않았는가? 안건 정리 에이전트가 낸 '이분법 밖의 선택지'와 대조하고, 유닛들이 다루지 않은 것이 있으면 다음 행동에 반영한다.
+1. **Error:** if a unit failed, gave no answer, or broke the format, re-run only that unit once. If it fails again, the resolution is **error**. Do not vote with the remaining two units only. Expose the failure instead of hiding it.
+2. **Information mode:** if the proposal is a question that cannot be answered with approve/reject, do not vote. Present each unit's answer, what they share, and where they diverge.
+3. **Grade objection:** if even one unit raised a grade objection on a normal proposal, raise it to critical and resolve accordingly (the "when in doubt, critical" principle).
+4. **Vote:** a conditional approve counts as approve. However, if a passed proposal has at least one conditional approve, the resolution is **conditionally passed**, and all conditions are combined. Follow-up proposals are resolved separately by the same rules.
+   - Normal proposal: 2 or more approvals → **passed**; otherwise **rejected**.
+   - Critical proposal: all 3 approve → **passed**; all 3 reject → **rejected**; a split opens a debate round.
+   - **Conflicting conditions:** if the units' conditions do not fit together (e.g. one unit specifies an option and another says to choose based on usage), the moderator does not merge them. Show the conflict as is and let the user choose.
+5. **Debate round (only when a critical proposal is split):** show each unit the other two units' verdicts and rationale, and let it give a verdict once more. Debate is limited to 1 round.
+   - To change position, a unit must cite a **new argument** raised by another unit. "Because the majority saw it that way" is not an argument. This prevents conformity pressure from breaking independence.
+   - A unit that changed position states what made it change.
+   - If the revote is still split, the result is **on hold** (until the rejecting unit's concerns are resolved).
+- **Unanimity check:** if all three units reached the same conclusion (all approve or all reject), suspect that they share the same blind spot because they come from the same model, check the following two points, and record the result.
+  1. **Shared premise:** do all three units' judgments rest on the same premise? Especially if it is an assumption filled in by the framing agent, state whether the resolution would flip if that premise were wrong.
+  2. **Missing alternative:** by treating the proposal only as "do it or not", did the units miss options in between (a reduced version, phased adoption, a different method)? Compare with the framing agent's "options outside the binary", and reflect anything the units did not address in the next actions.
 
-## 5. 출력 형식
+## 5. Output format
 
 ```
-## MAGI 심의 결과
+## MAGI Deliberation Result
 
-**안건:** ... (본 안건)
-**후속 안건:** (있으면)
-**등급:** 일반 / 중대 — (이유 한 줄, 등급 이의로 올렸으면 표시)
-**추가 정보:** (심의 전에 사용자에게 받은 답, 답을 못 받아 가정으로 둔 항목)
-**프리셋:** 기본 / 윤리 / 코드 리뷰 / 개인 결정 / 원작 / 사용자 정의 — (고른 이유 한 줄, 차선 후보)
-**전제:** 확인된 사실 / 가정 / 미확인 (가정은 표시)
-**이분법 밖의 선택지:** (안건 정리 에이전트가 찾은 것)
-**안건 정리:** 안건 정리 에이전트 / 진행자 직접
+**Proposal:** ... (main proposal)
+**Follow-up proposals:** (if any)
+**Grade:** normal / critical — (one-line reason; mark if raised by a grade objection)
+**Additional information:** (answers received from the user before deliberation; items left as assumptions without an answer)
+**Preset:** default / ethics / code review / personal decision / original / custom — (one-line reason, runner-up)
+**Premises:** confirmed facts / assumptions / unconfirmed (mark assumptions)
+**Options outside the binary:** (found by the framing agent)
+**Framing:** framing agent / moderator directly
 
-| 유닛 | 판정 | 확신도 | 핵심 근거 | 의심하는 전제 |
+| Unit | Verdict | Confidence | Key rationale | Doubted premise |
 |---|---|---|---|---|
-| MELCHIOR-1 | 승인 | 높음 | ... | ... |
-| BALTHASAR-2 | 거부 | 중간 | ... | ... |
-| CASPER-3 | 승인 | 중간 | ... | ... |
+| MELCHIOR-1 | Approve | High | ... | ... |
+| BALTHASAR-2 | Reject | Medium | ... | ... |
+| CASPER-3 | Approve | Medium | ... | ... |
 
-**결의:** 가결 / 조건부 가결 / 부결 / 보류 / 오류 (승인 n/3, 이 중 조건부 m)
-**후속 안건 결의:** (있으면 안건별로)
-**조건 충돌:** (있으면 그대로 표시하고 사용자 선택에 맡긴다)
-**조건:** (조건부 가결이면 모든 조건을 합쳐 적는다)
-**토론 라운드:** (열렸다면) 누가 어떤 새 근거로 입장을 바꿨는지, 또는 아무도 바꾸지 않았는지
+**Resolution:** passed / conditionally passed / rejected / on hold / error (approve n/3, of which m conditional)
+**Follow-up resolutions:** (if any, per proposal)
+**Conflicting conditions:** (if any, shown as is for the user to choose)
+**Conditions:** (if conditionally passed, all conditions combined)
+**Debate round:** (if held) who changed position on what new argument, or that no one changed
 
-**만장일치 경계 점검:** (해당 시) 공통 전제, 빠진 대안
+**Unanimity check:** (if applicable) shared premise, missing alternative
 
-**소수 의견:** 반대한 유닛의 논지를 줄이지 않고 남긴다.
+**Minority opinion:** keep the dissenting unit's argument without shortening it.
 
-**결의를 뒤집을 조건:** ...
-**다음 행동:** ...
+**What would flip the resolution:** ...
+**Next actions:** ...
 ```
 
-정보 모드에서는 결의 대신 다음 형식을 쓴다.
+In information mode, use this format instead of a resolution.
 
 ```
-## MAGI 정보
+## MAGI Information
 
-**질문:** ...
-**프리셋:** ...
+**Question:** ...
+**Preset:** ...
 
-| 유닛 | 답 |
+| Unit | Answer |
 |---|---|
 | MELCHIOR-1 | ... |
 | BALTHASAR-2 | ... |
 | CASPER-3 | ... |
 
-**공통점:** ...
-**갈리는 지점:** ...
+**Common ground:** ...
+**Where they diverge:** ...
 ```
 
-## 한계에 대해
+## Output language
 
-세 유닛이 같은 모델에서 나오면 진짜 설계 다양성은 아니다. 원작의 MAGI가 한 사람의 인격에서 나왔듯, 공통 원인 고장(common-mode failure)이 남는다. 중요한 안건이면 다른 근거 자료나 다른 사람·다른 모델의 검토를 함께 받으라고 결과 끝에 한 줄로 권한다.
+These instructions are in English, but the result is written in the language of the user's request: a request in Korean gets a Korean result. If the user asks for a specific language, use that language instead. Translate the headings, labels, and verdict words of the formats above as well; keep only the unit names (MELCHIOR-1, BALTHASAR-2, CASPER-3) as they are. Subagents receive the same language instruction, so each unit writes in that language too.
 
-안건 정리 에이전트를 분리해도 같은 모델이라는 점은 같다. 판단 지점이 진행자에게서 독립된 에이전트로 옮겨갈 뿐 없어지지 않는다. 안건 정리 결과를 출력에 그대로 보여주는 이유는 사용자가 이 지점을 직접 검토할 수 있게 하기 위해서다.
+## On limitations
+
+If the three units come from the same model, this is not true design diversity. Just as the original MAGI came from one person's personality, common-mode failure remains. For important proposals, add one line at the end of the result recommending a review from other sources, other people, or another model as well.
+
+Separating the framing agent does not change the fact that it is the same model. The point of judgment moves from the moderator to an independent agent; it does not disappear. The framing result is shown in the output as is so that the user can review this point directly.
