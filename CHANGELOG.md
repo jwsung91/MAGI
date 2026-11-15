@@ -2,6 +2,10 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.0.1]
+
+- No changes to the skill. This release checks the release process end to end: version check on the pull request, then the automatic tag and release on merge.
+
 ## [1.0.0]
 
 First tagged release.
