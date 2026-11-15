@@ -93,10 +93,15 @@ The original preset is inspired by the three aspects given to the MAGI in *Neon 
 The framing agent chooses the preset (section 1). If the user specifies one, follow it. If no preset fits, the framing agent designs three new perspectives for the proposal, chosen so that they can conflict with each other.
 
 Each unit produces:
-- **Verdict:** approve / conditional approve / reject (for conditional approve, state the conditions concretely in a checkable form)
+- **Verdict:** approve / reject. There is no conditional verdict: the vote must commit. If the verdict depends on a condition, handle the condition before voting:
+  - a fact that can be checked from sources → report it as a needed check; the moderator checks it and re-runs that unit once with the result;
+  - a fact only the user can answer → vote on the proposal as framed and write the condition under the doubted premise;
+  - a modified version of the proposal (e.g. "only if done at off-peak hours") → vote on the proposal as framed, and suggest the modified version as a recommendation;
+  - advice for carrying it out → put it under recommendations; it does not change the vote.
 - **Confidence:** high / medium / low
 - **Key rationale:** at most 3 points
 - **What would flip the verdict:** what would have to change for the unit to vote the other way
+- **Recommendations:** (optional, non-binding) advice for carrying out the proposal, or a modified version worth deciding separately. Recommendations are not counted in the vote.
 - **Doubted premise:** the one premise the unit finds most doubtful from its perspective, and how its verdict would change if that premise were wrong
 - **Grade objection:** (only if any) if the unit thinks the grade is wrong, give the reason (e.g. "the judgment that this is reversible is wrong")
 
@@ -114,10 +119,9 @@ Decide in this order.
 1. **Error:** if a unit failed, gave no answer, or broke the format, re-run only that unit once. If it fails again, the resolution is **error**. Do not vote with the remaining two units only. Expose the failure instead of hiding it.
 2. **Information mode:** if the proposal is a question that cannot be answered with approve/reject, do not vote. Present each unit's answer, what they share, and where they diverge.
 3. **Grade objection:** if even one unit raised a grade objection on a normal proposal, raise it to critical and resolve accordingly (the "when in doubt, critical" principle).
-4. **Vote:** a conditional approve counts as approve. However, if a passed proposal has at least one conditional approve, the resolution is **conditionally passed**, and all conditions are combined. Follow-up proposals are resolved separately by the same rules.
+4. **Vote:** count approvals. Follow-up proposals are resolved separately by the same rules.
    - Normal proposal: 2 or more approvals → **passed**; otherwise **rejected**.
    - Critical proposal: all 3 approve → **passed**; all 3 reject → **rejected**; a split opens a debate round.
-   - **Conflicting conditions:** if the units' conditions do not fit together (e.g. one unit specifies an option and another says to choose based on usage), the moderator does not merge them. Show the conflict as is and let the user choose.
 5. **Debate round (only when a critical proposal is split):** show each unit the other two units' verdicts and rationale, and let it give a verdict once more. Debate is limited to 1 round.
    - To change position, a unit must cite a **new argument** raised by another unit. "Because the majority saw it that way" is not an argument. This prevents conformity pressure from breaking independence.
    - A unit that changed position states what made it change.
@@ -147,10 +151,9 @@ Decide in this order.
 | BALTHASAR-2 | Reject | Medium | ... | ... |
 | CASPER-3 | Approve | Medium | ... | ... |
 
-**Resolution:** passed / conditionally passed / rejected / on hold / error (approve n/3, of which m conditional)
+**Resolution:** passed / rejected / on hold / error (approve n/3)
 **Follow-up resolutions:** (if any, per proposal)
-**Conflicting conditions:** (if any, shown as is for the user to choose)
-**Conditions:** (if conditionally passed, all conditions combined)
+**Recommendations:** (if any, per unit; non-binding. If units recommend modified versions of the proposal, list them as candidates for a separate decision without merging them)
 **Debate round:** (if held) who changed position on what new argument, or that no one changed
 
 **Unanimity check:** (if applicable) shared premise, missing alternative

@@ -14,7 +14,7 @@ A Claude skill that has three perspectives evaluate one proposal **without seein
 |---|---|
 | Moderator (main conversation) | Gathers facts, runs the agents, tallies the vote, reports |
 | Framing agent | Writes the proposal, grade, premises, preset, follow-up items, and questions for the user |
-| MELCHIOR-1 · BALTHASAR-2 · CASPER-3 | Independent review (verdict, confidence, rationale, doubted premise) |
+| MELCHIOR-1 · BALTHASAR-2 · CASPER-3 | Independent review (approve/reject, confidence, rationale, doubted premise) |
 
 The agent that frames the proposal is separate from the one that summarizes the result, so judgment is not concentrated in one place.
 
@@ -25,7 +25,7 @@ The agent that frames the proposal is separate from the one that summarizes the 
 | Normal | Reversible, limited impact | Passes with 2/3 approval |
 | Critical | Hard to reverse, or affects safety, security, data, or significant cost | Passes only if unanimous; on a split, one debate round and a revote; still split → on hold |
 
-- A conditional approval counts as approval, but all conditions are collected and the result is marked **conditionally passed**. Conflicting conditions are not merged; the user chooses.
+- Every vote is a plain approve or reject; there is no conditional approval. A condition is settled before the vote (checked as a fact, asked of the user, or proposed as a modified version), and advice for carrying out the decision is kept as a non-binding recommendation.
 - If any unit objects to the grade, the item is raised to critical.
 - If a unit fails, the other two do not vote alone; the result is reported as an **error**.
 - When all three agree, shared premises and missing alternatives are checked once more.
