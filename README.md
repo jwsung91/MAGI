@@ -27,6 +27,7 @@ The agent that frames the proposal is separate from the one that summarizes the 
 
 - Every vote is a plain approve or reject; there is no conditional approval. A condition is settled before the vote (checked as a fact, asked of the user, or proposed as a modified version), and advice for carrying out the decision is kept as a non-binding recommendation.
 - If any unit objects to the grade, the item is raised to critical.
+- In the debate round, every unit, majority as well as minority, must answer the other side's strongest argument. A unit may change position only by citing an argument another unit raised in the first round that it had not already weighed itself; the moderator checks this, and a change that fails keeps the unit's first-round verdict.
 - If a unit fails, the other two do not vote alone; the result is reported as an **error**.
 - When all three agree, shared premises and missing alternatives are checked once more.
 - Questions that cannot be answered with approve/reject go to **information** mode: each perspective answers, with no vote.
