@@ -3,7 +3,8 @@
 
 The skill version lives in .claude-plugin/plugin.json. Claude Code skips a plugin
 update when the version string is unchanged, so every change under skills/ must
-come with a version bump, or installed users never receive it.
+come with a version bump, or installed users never receive it. The manifests for
+other hosts (Codex, Gemini CLI) carry the same version and must match it.
 
 Subcommands:
   check-pr BASE      Fail if skills/ changed since BASE without a version bump,
@@ -12,8 +13,8 @@ Subcommands:
   check-release      Validate the current tree and print the version.
                      Used by the release workflow.
   notes VERSION      Print the CHANGELOG section for VERSION.
-  bump PART          Raise the version (patch, minor or major) in plugin.json
-                     and add an empty CHANGELOG section. For local use.
+  bump PART          Raise the version (patch, minor or major) in every
+                     manifest and add an empty CHANGELOG section. For local use.
 
 Standard library only; run from the repository root.
 """
@@ -25,6 +26,8 @@ import sys
 from pathlib import Path
 
 PLUGIN_JSON = ".claude-plugin/plugin.json"
+# Other hosts' manifests; each carries the same version as PLUGIN_JSON.
+MIRROR_JSONS = [".codex-plugin/plugin.json", "gemini-extension.json"]
 CHANGELOG = "CHANGELOG.md"
 SKILL_MD = "skills/magi/SKILL.md"
 SKILL_DIR = "skills/"
@@ -78,9 +81,20 @@ def check_description() -> None:
         raise CheckError(f"{SKILL_MD} description is {len(m.group(1))} characters (limit {DESCRIPTION_LIMIT})")
 
 
+def check_mirrors(version: str) -> None:
+    for path in MIRROR_JSONS:
+        other = json.loads(Path(path).read_text(encoding="utf-8")).get("version")
+        if other != version:
+            raise CheckError(
+                f"{path} version is {other!r} but {PLUGIN_JSON} is {version!r}. "
+                f"Run: python3 .github/scripts/release_tools.py bump <part>, or fix it by hand"
+            )
+
+
 def check_tree() -> str:
     version = current_version()
     parse_version(version)
+    check_mirrors(version)
     if not changelog_section(version):
         raise CheckError(f"{CHANGELOG} has no non-empty section '## [{version}]'")
     check_description()
@@ -109,6 +123,7 @@ def check_pr(base: str) -> None:
     if version_changed or skill_changed:
         check_tree()
     else:
+        check_mirrors(new)
         check_description()
     state = f"{old} -> {new}" if version_changed else f"{new} (unchanged)"
     print(f"OK: version {state}; skill files changed: {'yes' if skill_changed else 'no'}")
@@ -118,15 +133,16 @@ def bump(part: str) -> None:
     major, minor, patch = parse_version(current_version())
     new = {"major": (major + 1, 0, 0), "minor": (major, minor + 1, 0), "patch": (major, minor, patch + 1)}[part]
     new_s = ".".join(map(str, new))
-    path = Path(PLUGIN_JSON)
-    text = path.read_text(encoding="utf-8")
-    path.write_text(re.sub(r'("version"\s*:\s*")[^"]*(")', rf"\g<1>{new_s}\2", text, count=1), encoding="utf-8")
+    for name in [PLUGIN_JSON, *MIRROR_JSONS]:
+        path = Path(name)
+        text = path.read_text(encoding="utf-8")
+        path.write_text(re.sub(r'("version"\s*:\s*")[^"]*(")', rf"\g<1>{new_s}\2", text, count=1), encoding="utf-8")
     log = Path(CHANGELOG).read_text(encoding="utf-8")
     first = re.search(r"^## ", log, re.M)
     entry = f"## [{new_s}]\n\n- \n\n"
     log = log[: first.start()] + entry + log[first.start():] if first else log.rstrip() + "\n\n" + entry
     Path(CHANGELOG).write_text(log, encoding="utf-8")
-    print(f"{new_s}: updated {PLUGIN_JSON}; fill in the new section in {CHANGELOG}")
+    print(f"{new_s}: updated {', '.join([PLUGIN_JSON, *MIRROR_JSONS])}; fill in the new section in {CHANGELOG}")
 
 
 def main(argv: list) -> int:
