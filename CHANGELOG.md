@@ -2,6 +2,14 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.3.0]
+
+- Runs outside Claude: added a Codex plugin manifest (`.codex-plugin/plugin.json`, marketplace in `.agents/plugins/marketplace.json`) and a Gemini CLI extension manifest (`gemini-extension.json`). Other agents that read the Agent Skills format can install `skills/magi` with `npx skills add`.
+- The skill text no longer assumes Claude: the moderator is "the agent in the main conversation", and the skill tells the host to use its own way of launching subagents, asking questions, drawing visuals and running commands, with the existing fallbacks where one is missing.
+- JSON result and progress log: written wherever the agent can run shell commands and `MAGI_RESULTS_DIR` is set, not only in Claude Code.
+- Release tooling: `bump` raises the version in all three manifests, and the version check fails if they disagree.
+- The result JSON format is unchanged (version 2).
+
 ## [1.2.0]
 
 - Default preset: BALTHASAR-2's perspective is now "risk and cost" instead of "safety and sustainability". Its questions add what the proposal costs to carry (money, time, upkeep, opportunity) and what is lost if it sits unused, so a low-risk adoption is no longer approved on physical safety alone. Its premise-doubt area adds the real cost.

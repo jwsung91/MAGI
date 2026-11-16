@@ -2,7 +2,7 @@
 
 Inspired by the MAGI system in *Neon Genesis Evangelion*.
 
-A Claude skill that has three perspectives evaluate one proposal **without seeing each other's results**, then resolves it by a voting rule. The goal is to keep a decision from leaning on a single viewpoint and to keep dissent on the record instead of erasing it. The final decision always belongs to the user; the MAGI resolution is input to that decision.
+An agent skill (Claude, Codex, Gemini CLI, and other agents that read the open Agent Skills format) that has three perspectives evaluate one proposal **without seeing each other's results**, then resolves it by a voting rule. The goal is to keep a decision from leaning on a single viewpoint and to keep dissent on the record instead of erasing it. The final decision always belongs to the user; the MAGI resolution is input to that decision.
 
 ![MAGI deliberation flow](docs/flow.svg)
 
@@ -46,7 +46,7 @@ The framing agent picks the preset unless the user specifies one. If none fits, 
 
 ## Installation
 
-Pick one of the two. If you use both the Claude app and Claude Code with the same account, skills enabled in the app also load in Claude Code, so installing both ways gives you two copies of MAGI.
+Pick one way per agent. If you use both the Claude app and Claude Code with the same account, skills enabled in the app also load in Claude Code, so installing both ways gives you two copies of MAGI.
 
 **Claude Code (plugin)**
 
@@ -71,9 +71,34 @@ cp -r MAGI/skills/magi ~/.claude/skills/magi
 
 A manual copy does not update itself. If you switch to the plugin, delete `~/.claude/skills/magi` first.
 
+**Codex (plugin)**
+
+```bash
+codex plugin marketplace add jwsung91/MAGI
+codex plugin add magi@jwsung91
+```
+
+**Gemini CLI (extension)**
+
+```bash
+gemini extensions install https://github.com/jwsung91/MAGI
+```
+
+Update with `gemini extensions update magi`.
+
+**Other agents (GitHub Copilot, Cursor, and others)**
+
+Agents that read the Agent Skills format can install the skill folder with the [skills CLI](https://github.com/vercel-labs/skills):
+
+```bash
+npx skills add jwsung91/MAGI --skill magi
+```
+
+Or copy `skills/magi` into the agent's skills folder by hand (for example `.agents/skills/magi`).
+
 ## Versions
 
-The skill version is in [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) and follows Semantic Versioning; changes are listed in [CHANGELOG.md](CHANGELOG.md). Version 1.0.0 marks the first public release, not a stability promise.
+The skill version is in [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json), mirrored in [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) and [`gemini-extension.json`](gemini-extension.json), and follows Semantic Versioning; changes are listed in [CHANGELOG.md](CHANGELOG.md). Version 1.0.0 marks the first public release, not a stability promise.
 
 The result JSON has its own format version (`version` in [`result.schema.json`](skills/magi/result.schema.json)). Two rules connect the two:
 
@@ -92,7 +117,7 @@ Claude Code installs a plugin update only when the version string changes, so ev
    ```bash
    python3 .github/scripts/release_tools.py bump patch   # or minor / major
    ```
-2. The **Version check** workflow fails the pull request if `skills/` changed without a bump, the version went down, or the new version has no CHANGELOG entry.
+2. The **Version check** workflow fails the pull request if `skills/` changed without a bump, the version went down, the three manifests disagree, or the new version has no CHANGELOG entry.
 3. After the merge, the **Release** workflow sees a version with no tag, creates tag `v<version>`, and publishes a GitHub Release with `magi-<version>.zip` and the CHANGELOG section. A push that keeps the version does nothing. To retry a failed release, run the workflow manually from the Actions tab.
 
 ## Usage
@@ -104,17 +129,17 @@ Decide with MAGI: should this PR go into this release?
 /magi 이번 주에 운영 DB 스키마를 마이그레이션한다   # answered in Korean
 ```
 
-Installed as a Claude Code plugin, the command is namespaced: `/magi:magi <proposal>`. Asking in words ("decide with MAGI: …") works either way.
+Installed as a Claude Code plugin, the command is namespaced: `/magi:magi <proposal>`. Command forms differ between agents; asking in words ("decide with MAGI: …") works in all of them.
 
-Works best where subagents are available (Claude Code, or agent features in the Claude app). Otherwise the units are written one at a time, and the output says so.
+Works best where the agent can launch subagents, so the three units really cannot see each other. Otherwise the units are written one at a time, and the output says so.
 
 ## Result card
 
-Where Claude can draw interactive visuals in the conversation (for example, the Claude app), MAGI shows a small result card first, followed by the full Markdown result: the resolution, the three units' verdicts, and each unit's rationale on click, including how each unit voted on any follow-up proposals. Elsewhere, such as Claude Code in a terminal, the card is skipped and the Markdown result is unchanged. Say "no card" to turn it off. The card is specified in [`skills/magi/references/card.md`](skills/magi/references/card.md).
+Where the agent can draw interactive visuals in the conversation (for example, the Claude app), MAGI shows a small result card first, followed by the full Markdown result: the resolution, the three units' verdicts, and each unit's rationale on click, including how each unit voted on any follow-up proposals. Elsewhere, such as a terminal agent, the card is skipped and the Markdown result is unchanged. Say "no card" to turn it off. The card is specified in [`skills/magi/references/card.md`](skills/magi/references/card.md).
 
 ## JSON output (optional)
 
-In Claude Code, if the environment variable `MAGI_RESULTS_DIR` is set, MAGI also saves each result as a JSON file in that folder, so other tools can read it. The format is described in [`skills/magi/result.schema.json`](skills/magi/result.schema.json). Enum values are always English; free text follows the output language. Without the variable, nothing is written.
+Where the agent can run shell commands (Claude Code, Codex, Gemini CLI, and the like), if the environment variable `MAGI_RESULTS_DIR` is set, MAGI also saves each result as a JSON file in that folder, so other tools can read it. The format is described in [`skills/magi/result.schema.json`](skills/magi/result.schema.json). Enum values are always English; free text follows the output language. Without the variable, nothing is written.
 
 With the same variable, MAGI also writes a progress log, one JSON line per step, to `$MAGI_RESULTS_DIR/<run_id>.jsonl`. Follow a run live with `tail -f "$MAGI_RESULTS_DIR"/*.jsonl`, or read it afterwards.
 

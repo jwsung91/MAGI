@@ -13,9 +13,11 @@ Inspired by the MAGI system in *Neon Genesis Evangelion*. This is an unofficial 
 
 | Role | Who | Responsibility |
 |---|---|---|
-| Moderator | Claude in the main conversation | Gathers material, runs each agent, tallies the vote, reports |
+| Moderator | The agent in the main conversation | Gathers material, runs each agent, tallies the vote, reports |
 | Framing agent | Separate subagent | Decides the proposal wording, premises, grade, and preset |
 | MELCHIOR-1 · BALTHASAR-2 · CASPER-3 | Three separate subagents | Independent review |
+
+This skill follows the open Agent Skills format and runs in any agent that loads it (Claude Code, the Claude app, Codex, Gemini CLI, and others). Use whatever the host offers for each step: its way of launching subagents, asking the user questions, drawing inline visuals, and running shell commands. Where a capability is missing, follow the fallback given for that step.
 
 Why framing is separated from the moderator: how the proposal is worded and which premises go into it affect the outcome more than anything else. If the party that summarizes the result also writes the proposal, judgment is concentrated in one place.
 
@@ -236,7 +238,7 @@ These instructions are in English, but the result is written in the language of 
 ## 6. JSON output (optional, for viewers)
 
 Write a JSON copy of the result only in these cases:
-- in Claude Code, when the environment variable `MAGI_RESULTS_DIR` is set (check with `echo "$MAGI_RESULTS_DIR"` at the start of the run);
+- where the agent can run shell commands and write files (Claude Code, Codex, Gemini CLI, and the like), when the environment variable `MAGI_RESULTS_DIR` is set (check with `echo "$MAGI_RESULTS_DIR"` at the start of the run);
 - when the user asks for JSON.
 
 Otherwise skip this section entirely.
@@ -244,7 +246,7 @@ Otherwise skip this section entirely.
 Rules:
 - Build the result once, then derive both the Markdown and the JSON from it, so the two never disagree.
 - Enum values are always the English values below, whatever the output language. Free text (agenda, rationale, perspective, and so on) is written in the output language.
-- In Claude Code, save to `$MAGI_RESULTS_DIR/YYYYMMDD-HHMMSS-<short-slug>.json` (create the folder if needed), show the Markdown result as usual, and add one line with the file path. Where files cannot be written, output the JSON as a code block only when the user asked for it.
+- When `MAGI_RESULTS_DIR` is set, save to `$MAGI_RESULTS_DIR/YYYYMMDD-HHMMSS-<short-slug>.json` (create the folder if needed), show the Markdown result as usual, and add one line with the file path. Where files cannot be written, output the JSON as a code block only when the user asked for it.
 - The full schema is `result.schema.json` next to this file. The fields:
 
 ```
@@ -271,7 +273,7 @@ units: {melchior, balthasar, casper}, each:
 
 ## 7. Progress log (optional, JSON Lines)
 
-In Claude Code, when `MAGI_RESULTS_DIR` is set, also record the run as it happens, one JSON line per event, in `$MAGI_RESULTS_DIR/<run_id>.jsonl`. `<run_id>` is the same `YYYYMMDD-HHMMSS-<short-slug>` used for the JSON result. Anyone can follow it live (`tail -f`) or review it afterwards.
+Where the agent can run shell commands and `MAGI_RESULTS_DIR` is set, also record the run as it happens, one JSON line per event, in `$MAGI_RESULTS_DIR/<run_id>.jsonl`. `<run_id>` is the same `YYYYMMDD-HHMMSS-<short-slug>` used for the JSON result. Anyone can follow it live (`tail -f`) or review it afterwards.
 
 - Only the moderator writes. Units keep returning text.
 - Write with the helper in this skill's folder, passing the event on stdin through a quoted heredoc, so no shell escaping is needed:

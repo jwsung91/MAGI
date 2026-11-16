@@ -1,0 +1,21 @@
+{
+  "name": "jwsung91",
+  "interface": {
+    "displayName": "jwsung91"
+  },
+  "plugins": [
+    {
+      "name": "magi",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/jwsung91/MAGI.git",
+        "ref": "main"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
