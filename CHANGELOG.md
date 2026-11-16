@@ -2,6 +2,17 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.2.0]
+
+- Default preset: BALTHASAR-2's perspective is now "risk and cost" instead of "safety and sustainability". Its questions add what the proposal costs to carry (money, time, upkeep, opportunity) and what is lost if it sits unused, so a low-risk adoption is no longer approved on physical safety alone. Its premise-doubt area adds the real cost.
+- Default preset: the three questions no longer overlap. MELCHIOR-1 asks whether the means reaches the stated goal (its "simpler alternative" is now a technically simpler way to the same goal, not a cheaper one). CASPER-3 asks whether the goal itself is wanted and what is gained; "is it worth the effort" is removed, since effort is BALTHASAR-2's cost.
+- In every preset, custom perspectives included, a unit builds its verdict on its own perspective's question; a point that belongs to another unit's question goes under recommendations.
+- Code review preset: MELCHIOR-1 judges correctness on the intended path, BALTHASAR-2 everything off it (security, failure, compatibility), CASPER-3 readability, design and maintainability. "Failure" and "design" no longer sit in two units.
+- Personal decision preset: now covers decisions that involve family or an organization as well as one's own. MELCHIOR-1 is "real gain and feasibility" (what it actually gets you, and whether it can be done with the ability and means at hand), and BALTHASAR-2 "risk, cost and relationships" (including what it does to the people affected with you). Before, two of the three perspectives looked only at what is gained, none at whether the plan is realistic, and decisions involving other people fell to custom perspectives.
+- Original preset: used only when the user specifies it; the framing agent no longer chooses it. It is now listed in the README.
+- Result card: drawn first, before the Markdown result, so the resolution is visible at a glance. The Markdown result still follows in full.
+- The result JSON format is unchanged (version 2).
+
 ## [1.1.0]
 
 - Debate round: every unit, majority as well as minority, must answer the strongest argument of each unit that voted the other way (rebut or concede).

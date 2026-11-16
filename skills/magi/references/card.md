@@ -1,12 +1,12 @@
 # MAGI result card
 
-A compact visual summary drawn after the Markdown result, only when a tool that renders interactive visuals inline in the conversation is available. The Markdown result stays complete on its own; the card never replaces it.
+A compact visual summary drawn first, before the Markdown result, only when a tool that renders interactive visuals inline in the conversation is available. The Markdown result stays complete on its own; the card never replaces it.
 
 ## When to draw it
 
 - Draw it only if such a tool is available in this session. Without one, skip the card entirely: do not print its HTML or code, and do not create a file for it.
 - Skip it when the user asks for no card (e.g. "no card", "카드 없이").
-- One card per deliberation, after the Markdown result.
+- One card per deliberation, before the Markdown result. Draw it only once the resolution is tallied; at most one short line may come before it. The full Markdown result follows the card.
 
 ## Content
 

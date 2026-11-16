@@ -36,12 +36,13 @@ The agent that frames the proposal is separate from the one that summarizes the 
 
 | Preset | MELCHIOR-1 | BALTHASAR-2 | CASPER-3 |
 |---|---|---|---|
-| Default | Technical feasibility | Safety and sustainability | Needs and value |
+| Default | Technical feasibility | Risk and cost | Needs and value |
 | Ethics | Consequentialism | Deontology | Virtue ethics and relationships |
-| Code review | Correctness and design | Security, failure, compatibility | Readability and maintainability |
-| Personal decision | Growth and capability | Risk and stability | Motivation and satisfaction |
+| Code review | Correctness on the intended path | Security, failure, compatibility | Readability, design, maintainability |
+| Personal decision | Real gain and feasibility | Risk, cost and relationships | Motivation and satisfaction |
+| Original (only on request) | Scientist | Mother | Woman |
 
-The framing agent picks the preset unless the user specifies one. If none fits, it designs three new perspectives that can genuinely conflict.
+The framing agent picks the preset unless the user specifies one. If none fits, it designs three new perspectives that can genuinely conflict. In every preset, each unit builds its verdict on its own perspective's question, so two units do not vote on the same argument.
 
 ## Installation
 
@@ -109,7 +110,7 @@ Works best where subagents are available (Claude Code, or agent features in the 
 
 ## Result card
 
-Where Claude can draw interactive visuals in the conversation (for example, the Claude app), MAGI adds a small result card after the Markdown result: the resolution, the three units' verdicts, and each unit's rationale on click, including how each unit voted on any follow-up proposals. Elsewhere, such as Claude Code in a terminal, the card is skipped and the Markdown result is unchanged. Say "no card" to turn it off. The card is specified in [`skills/magi/references/card.md`](skills/magi/references/card.md).
+Where Claude can draw interactive visuals in the conversation (for example, the Claude app), MAGI shows a small result card first, followed by the full Markdown result: the resolution, the three units' verdicts, and each unit's rationale on click, including how each unit voted on any follow-up proposals. Elsewhere, such as Claude Code in a terminal, the card is skipped and the Markdown result is unchanged. Say "no card" to turn it off. The card is specified in [`skills/magi/references/card.md`](skills/magi/references/card.md).
 
 ## JSON output (optional)
 
