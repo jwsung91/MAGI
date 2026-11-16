@@ -1,6 +1,6 @@
 ---
 name: "magi"
-description: "Three-perspective MAGI deliberation: technical, safety and human views judge independently; 2/3 majority, or unanimity if critical. Use for /magi, 'decide with MAGI', 'MAGI로 판단해줘', go/no-go calls."
+description: "Three-perspective MAGI deliberation: technical, risk and human views judge independently; 2/3 majority, or unanimity if critical. Use for /magi, 'decide with MAGI', 'MAGI로 판단해줘', go/no-go calls."
 ---
 
 # MAGI — Three-Perspective Majority Deliberation
@@ -83,9 +83,11 @@ Independence is the core.
 
 | Unit | Perspective | Main questions |
 |---|---|---|
-| **MELCHIOR-1** (scientist) | Technical feasibility | Is the evidence right? Does it work? Complexity, performance, correctness? Is there a simpler alternative? |
-| **BALTHASAR-2** (guardian) | Safety and sustainability | What breaks if it fails? Can it be reversed? Operations and maintenance burden? Who gets hurt? |
-| **CASPER-3** (human) | Needs and value | Is this what the user and stakeholders really want? What do motivation and intuition say? Is it worth the effort? |
+| **MELCHIOR-1** (scientist) | Technical feasibility | Is the evidence right? Does it work, and does it reach the stated goal? Complexity, performance, correctness? Is there a technically simpler way to the same goal? |
+| **BALTHASAR-2** (guardian) | Risk and cost | What is lost if it fails or sits unused? Can it be reversed? What does it cost to carry: money, time, upkeep, opportunity? Who gets hurt? |
+| **CASPER-3** (human) | Needs and value | Is the goal what the user and stakeholders really want? What do motivation and intuition say? What do they gain if it works? |
+
+The three questions are kept apart: MELCHIOR-1 asks whether the means reaches the stated goal, BALTHASAR-2 what it costs and what is lost if it goes wrong, CASPER-3 whether the goal itself is wanted and what is gained.
 
 ### Presets
 
@@ -93,15 +95,17 @@ The table above is the **default** preset. Keep the unit names and change only t
 
 | Preset | MELCHIOR-1 | BALTHASAR-2 | CASPER-3 |
 |---|---|---|---|
-| Default (engineering, product) | Technical feasibility | Safety and sustainability | Needs and value |
+| Default (engineering, product) | Technical feasibility | Risk and cost | Needs and value |
 | Ethics | Consequentialism: does the sum of outcomes improve? | Deontology: rights and duties; is this something that must not be done regardless of outcome? | Virtue ethics and relationships: what kind of person does this choice make you; relationships and emotions |
-| Code review | Correctness and design | Security, failure, compatibility | The colleague who will read and change it: readability, maintainability |
-| Personal decision (career, etc.) | Growth and capability | Risk and stability of life | Motivation and satisfaction |
+| Code review | Correctness: does it do what it claims on the intended path? | Off the intended path: security, failure, compatibility with existing callers | The colleague who will read and change it: readability, design, maintainability |
+| Personal decision (career, family, organization) | Real gain and feasibility: what does it actually get you (growth, standing, use), and can you do it with the ability and means you have now? | Risk, cost and relationships: what you could lose, what it costs to carry, stability of life, and what it does to the people affected with you (family, team) | Motivation and satisfaction: do you really want it? |
 | Original | Scientist: understanding and technological progress | Mother: protection and well-being | Woman: love, dreams, desire |
 
-The original preset is inspired by the three aspects given to the MAGI in *Neon Genesis Evangelion*.
+The original preset is inspired by the three aspects given to the MAGI in *Neon Genesis Evangelion*. Its perspectives run along the same lines as the default preset, so use it only when the user specifies it; the framing agent does not choose it or name it as runner-up.
 
-The framing agent chooses the preset (section 1). If the user specifies one, follow it. If no preset fits, the framing agent designs three new perspectives for the proposal, chosen so that they can conflict with each other.
+The framing agent chooses the preset (section 1). If the user specifies one, follow it. If no preset fits, the framing agent designs three new perspectives for the proposal, chosen so that they can conflict with each other and do not judge the same question.
+
+In every preset, custom perspectives included, a unit builds its verdict on its own perspective's question. A point that belongs to another unit's question goes under recommendations, not in the key rationale. Otherwise two units vote on the same argument and the majority is narrower than it looks.
 
 Each unit produces:
 - **Verdict:** approve / reject. There is no conditional verdict: the vote must commit. If the verdict depends on a condition, handle the condition before voting:
@@ -118,7 +122,7 @@ Each unit produces:
 
 Premise doubts are split by perspective. If all three units accept the same premises unchanged, a common-mode failure arises at the input stage.
 - MELCHIOR-1: technical premises (performance, how things work, accuracy of data)
-- BALTHASAR-2: safety and operational premises (what is the safe state, the blast radius of failure)
+- BALTHASAR-2: risk and cost premises (what is the safe state, the blast radius of failure, what it really costs to carry)
 - CASPER-3: requirement premises (is this a problem worth solving, who wants it)
 
 With other presets, adapt the premise-doubt areas to each unit's perspective.
@@ -209,7 +213,7 @@ In information mode, use this format instead of a resolution.
 
 ### Result card (optional)
 
-If a tool that renders interactive visuals inline in the conversation is available, draw a result card after the Markdown result, following `references/card.md` in this skill's folder. In short: the proposal and resolution at the top, the three units side by side with their verdicts, one unit's rationale shown when it is clicked, and the minority opinion at the bottom, in a neutral design that follows the host's theme. Unit tiles are filled with their verdict color (approve blue, reject red); the resolution badge is passed green, rejected red, on hold yellow; confidence appears only as text in the details. Follow-up proposals get their own rows below the main units: the follow-up text, its resolution badge, and three small unit chips filled with each unit's verdict color; clicking a chip shows that unit's rationale for that follow-up in the same details area. If `references/card.md` is not available, follow this summary.
+If a tool that renders interactive visuals inline in the conversation is available, draw a result card first, before the Markdown result, following `references/card.md` in this skill's folder. Finish the tally before drawing, so the card and the Markdown come from the same result; the card may be preceded only by one short line saying that the result follows. If the copy of `references/card.md` at hand still says to draw the card after the Markdown result, this section takes precedence. In short: the proposal and resolution at the top, the three units side by side with their verdicts, one unit's rationale shown when it is clicked, and the minority opinion at the bottom, in a neutral design that follows the host's theme. Unit tiles are filled with their verdict color (approve blue, reject red); the resolution badge is passed green, rejected red, on hold yellow; confidence appears only as text in the details. Follow-up proposals get their own rows below the main units: the follow-up text, its resolution badge, and three small unit chips filled with each unit's verdict color; clicking a chip shows that unit's rationale for that follow-up in the same details area. If `references/card.md` is not available, follow this summary.
 
 Implementation rules (hosts pre-style form controls, which can silently erase colors):
 - Build clickable tiles and chips as `<div role="button" tabindex="0">`, not `<button>`; handle Enter/Space as well as click.
@@ -221,8 +225,8 @@ Without such a tool, skip the card: do not print its HTML or create a file for i
 ### Before finishing
 
 Check each output in this order before ending the reply:
-1. The Markdown result.
-2. The result card, if a tool that renders inline visuals is available.
+1. The result card, if a tool that renders inline visuals is available.
+2. The Markdown result, complete even when a card was drawn.
 3. The JSON result and the `final` progress event, if `MAGI_RESULTS_DIR` is set (sections 6 and 7).
 
 ## Output language
