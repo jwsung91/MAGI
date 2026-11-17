@@ -1,6 +1,6 @@
 {
   "name": "magi",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Three-perspective majority deliberation: three independent reviews of one proposal, resolved by 2/3 majority or unanimity for critical items.",
   "author": { "name": "jwsung91", "url": "https://github.com/jwsung91" },
   "homepage": "https://github.com/jwsung91/MAGI",

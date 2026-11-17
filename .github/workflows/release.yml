@@ -2,7 +2,7 @@ name: Release
 
 # Runs on every push to main. If the version in .claude-plugin/plugin.json has
 # no tag yet, it creates tag v<version> and a GitHub Release with the skill zip
-# (for upload to the Claude app) in this same job. Creating the tag here, not in
+# (for upload to the Claude app) and the plugin zip (for ChatGPT and Codex) in this same job. Creating the tag here, not in
 # a separate tag-triggered workflow, matters: events made with GITHUB_TOKEN do
 # not start other workflow runs. If the tag already exists, the job does nothing.
 
@@ -44,6 +44,18 @@ jobs:
           cd skills
           zip -r "../magi-${{ steps.version.outputs.version }}.zip" magi -x '*/__pycache__/*'
 
+      # Plugin zip for ChatGPT and Codex uploads: the Codex manifest and
+      # skills/<name>/SKILL.md at the archive root. Files are made readable
+      # (644) because uploads with owner-only permissions can fail to register.
+      - name: Build plugin zip
+        if: steps.version.outputs.exists == 'false'
+        run: |
+          stage="$(mktemp -d)"
+          cp -r .codex-plugin skills LICENSE "$stage/"
+          find "$stage" -name __pycache__ -prune -exec rm -rf {} +
+          chmod -R u+rwX,go+rX,go-w "$stage"
+          (cd "$stage" && zip -r -X "$GITHUB_WORKSPACE/magi-plugin-${{ steps.version.outputs.version }}.zip" .codex-plugin skills LICENSE)
+
       - name: Create tag and release
         if: steps.version.outputs.exists == 'false'
         env:
@@ -51,7 +63,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           python3 .github/scripts/release_tools.py notes "$VERSION" > notes.md
-          gh release create "v$VERSION" "magi-$VERSION.zip" \
+          gh release create "v$VERSION" "magi-$VERSION.zip" "magi-plugin-$VERSION.zip" \
             --target "$GITHUB_SHA" \
             --title "MAGI $VERSION" \
             --notes-file notes.md
