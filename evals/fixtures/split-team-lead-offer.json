@@ -1,0 +1,20 @@
+{
+  "id": "split-team-lead-offer",
+  "category": "split",
+  "lang": "en",
+  "request": "Should I accept the offer to become the lead of my team?",
+  "facts": [
+    "I am a senior engineer on a six-person team; the lead role would start next month.",
+    "About half of a lead's week goes to meetings, hiring and performance reviews; I would write much less code.",
+    "I have said for two years that I want more say in the technical direction, and the lead sets the team's roadmap.",
+    "I enjoy writing code on most days and I have never managed people.",
+    "The previous lead stepped down after 18 months and gave overload as the reason.",
+    "If I decline, the role goes to an external hire.",
+    "My manager says I can go back to an engineering role after a year if it does not fit, but the project I run now would be handed to someone else in the meantime."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "split": true, "preset_match": "personal" }
+  },
+  "note": "A personal decision with a real gain (the say in direction that was asked for), a real cost (the work that is enjoyed, the current project) and a mixed signal on fit. The only split fixture outside engineering, so it also shows whether the personal-decision preset is chosen. No expected outcome. In the first run (1.5.1, three runs, personal-decision preset every time, graded critical) two runs passed 3/0 and one was on hold at 2/1, the risk unit rejecting over the previous lead's overload and no management experience. Approve leaned on the say in direction asked for, the external hire as the alternative and the one-year way back. The only split fixture that split."
+}

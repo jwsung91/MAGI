@@ -2,6 +2,7 @@
   "id": "unattended-ambiguous-release",
   "category": "questions",
   "lang": "en",
+  "smoke": true,
   "interaction": "unattended",
   "request": "Should we release the library now?",
   "facts": [

@@ -2,6 +2,7 @@
   "id": "grade-critical-drop-table",
   "category": "grade",
   "lang": "en",
+  "smoke": true,
   "request": "Should we drop the orders_2019 table from the production database tonight?",
   "facts": [
     "Query logs show the table was last read two years ago.",

@@ -2,6 +2,7 @@
   "id": "clear-approve-regression-test",
   "category": "clear",
   "lang": "en",
+  "smoke": true,
   "request": "Should we add a regression test for the date-parsing bug we fixed last week?",
   "facts": [
     "The bug reached production once and produced wrong invoice dates for one day.",

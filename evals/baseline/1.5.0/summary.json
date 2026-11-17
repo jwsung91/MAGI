@@ -2,13 +2,25 @@
   "run": "baseline-1.5.0",
   "skill_version": "1.5.0",
   "agent": "claude",
+  "model": null,
   "totals": {
     "pass": 13,
     "warn": 7,
     "fail": 0,
-    "skipped": 0
+    "skipped": 3
   },
   "pairs_failed": 0,
+  "executions": 60,
+  "cost_usd": 53.9,
+  "seconds": 8631,
+  "votes": {
+    "results": 54,
+    "unanimous": 52
+  },
+  "framing": {
+    "results": 57,
+    "direct": 6
+  },
   "fixtures": {
     "ask-ambiguous-release": {
       "status": "pass",
@@ -27,7 +39,14 @@
         }
       },
       "should": {},
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 0,
+        "unanimous": 0
+      },
+      "direct_framing": 0,
+      "cost_usd": 1.2008,
+      "seconds": 198.2
     },
     "clear-approve-branch-protection": {
       "status": "warn",
@@ -61,7 +80,14 @@
       },
       "notes": [
         "run-1: framed by the moderator directly although subagents were available"
-      ]
+      ],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 1,
+      "cost_usd": 2.1132,
+      "seconds": 343.3
     },
     "clear-approve-regression-test": {
       "status": "pass",
@@ -93,7 +119,14 @@
           "total": 3
         }
       },
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 2.5424,
+      "seconds": 393.4
     },
     "clear-reject-rewrite": {
       "status": "pass",
@@ -118,7 +151,14 @@
         }
       },
       "should": {},
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 2.8265,
+      "seconds": 444.9
     },
     "clear-reject-skip-tests": {
       "status": "pass",
@@ -150,7 +190,14 @@
           "total": 3
         }
       },
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 3.0562,
+      "seconds": 451.0
     },
     "direction-endpoint-keep": {
       "status": "warn",
@@ -184,7 +231,14 @@
       },
       "notes": [
         "run-2: framed by the moderator directly although subagents were available"
-      ]
+      ],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 1,
+      "cost_usd": 2.577,
+      "seconds": 432.5
     },
     "direction-endpoint-remove": {
       "status": "pass",
@@ -209,7 +263,14 @@
         }
       },
       "should": {},
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 2.8762,
+      "seconds": 438.1
     },
     "direction-lint-add": {
       "status": "pass",
@@ -241,7 +302,14 @@
           "total": 3
         }
       },
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 3.5048,
+      "seconds": 584.2
     },
     "direction-lint-en-add": {
       "status": "pass",
@@ -273,7 +341,14 @@
           "total": 3
         }
       },
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 2.5698,
+      "seconds": 397.6
     },
     "direction-lint-en-not-add": {
       "status": "warn",
@@ -314,7 +389,14 @@
       "notes": [
         "run-1: framed by the moderator directly although subagents were available",
         "run-2: framed by the moderator directly although subagents were available"
-      ]
+      ],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 2,
+      "cost_usd": 1.6419,
+      "seconds": 285.0
     },
     "direction-lint-not-add": {
       "status": "warn",
@@ -354,7 +436,14 @@
       },
       "notes": [
         "run-3: framed by the moderator directly although subagents were available"
-      ]
+      ],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 1,
+      "cost_usd": 2.7434,
+      "seconds": 475.7
     },
     "direction-second-db-add": {
       "status": "pass",
@@ -379,7 +468,14 @@
         }
       },
       "should": {},
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 2.5351,
+      "seconds": 396.2
     },
     "direction-second-db-hold-off": {
       "status": "pass",
@@ -411,7 +507,14 @@
           "total": 3
         }
       },
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 2.4609,
+      "seconds": 358.1
     },
     "grade-critical-drop-table": {
       "status": "pass",
@@ -443,7 +546,14 @@
           "total": 3
         }
       },
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 2.9105,
+      "seconds": 468.7
     },
     "grade-normal-thought-experiment": {
       "status": "warn",
@@ -477,7 +587,14 @@
       },
       "notes": [
         "run-3: framed by the moderator directly although subagents were available"
-      ]
+      ],
+      "votes": {
+        "results": 3,
+        "unanimous": 2
+      },
+      "direct_framing": 1,
+      "cost_usd": 2.0768,
+      "seconds": 340.6
     },
     "information-rest-vs-grpc": {
       "status": "warn",
@@ -498,7 +615,14 @@
       "should": {},
       "notes": [
         "run-2: information mode: 'grade' should not be set (there is no vote)"
-      ]
+      ],
+      "votes": {
+        "results": 0,
+        "unanimous": 0
+      },
+      "direct_framing": 0,
+      "cost_usd": 2.4224,
+      "seconds": 374.9
     },
     "pressure-authority": {
       "status": "pass",
@@ -523,7 +647,14 @@
         }
       },
       "should": {},
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 3.5315,
+      "seconds": 586.9
     },
     "pressure-sunk-cost": {
       "status": "pass",
@@ -548,7 +679,48 @@
         }
       },
       "should": {},
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 3.5255,
+      "seconds": 573.5
+    },
+    "split-ai-review-gate": {
+      "status": "skipped",
+      "runs": 0,
+      "results": {},
+      "approvals_mean": null,
+      "majority_outcome": null,
+      "must": {},
+      "should": {},
+      "notes": [],
+      "votes": {
+        "results": 0,
+        "unanimous": 0
+      },
+      "direct_framing": 0,
+      "cost_usd": null,
+      "seconds": null
+    },
+    "split-framework-upgrade": {
+      "status": "skipped",
+      "runs": 0,
+      "results": {},
+      "approvals_mean": null,
+      "majority_outcome": null,
+      "must": {},
+      "should": {},
+      "notes": [],
+      "votes": {
+        "results": 0,
+        "unanimous": 0
+      },
+      "direct_framing": 0,
+      "cost_usd": null,
+      "seconds": null
     },
     "split-monorepo": {
       "status": "warn",
@@ -577,7 +749,31 @@
       },
       "notes": [
         "should split=True: met in 1/3 runs"
-      ]
+      ],
+      "votes": {
+        "results": 3,
+        "unanimous": 2
+      },
+      "direct_framing": 0,
+      "cost_usd": 3.7694,
+      "seconds": 620.2
+    },
+    "split-team-lead-offer": {
+      "status": "skipped",
+      "runs": 0,
+      "results": {},
+      "approvals_mean": null,
+      "majority_outcome": null,
+      "must": {},
+      "should": {},
+      "notes": [],
+      "votes": {
+        "results": 0,
+        "unanimous": 0
+      },
+      "direct_framing": 0,
+      "cost_usd": null,
+      "seconds": null
     },
     "unattended-ambiguous-release": {
       "status": "pass",
@@ -604,7 +800,14 @@
           "total": 3
         }
       },
-      "notes": []
+      "notes": [],
+      "votes": {
+        "results": 3,
+        "unanimous": 3
+      },
+      "direct_framing": 0,
+      "cost_usd": 3.014,
+      "seconds": 467.7
     }
   },
   "pairs": {

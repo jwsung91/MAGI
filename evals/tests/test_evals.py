@@ -326,6 +326,80 @@ class ResultTests(unittest.TestCase):
         self.assertEqual(check.render_compare(after, before)[1], [])
 
 
+class StatsTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_agent_cost(self):
+        self.assertEqual(check.agent_cost('{"type": "result", "total_cost_usd": 0.81237}'), 0.8124)
+        self.assertEqual(check.agent_cost('[{"type": "system"}, {"type": "result", "total_cost_usd": 1}]'), 1.0)
+        for text in ("", "done", '{"type": "result"}', '{"total_cost_usd": true}', '"0.5"'):
+            self.assertIsNone(check.agent_cost(text), text)
+
+    def test_agent_error(self):
+        not_logged_in = '{"type": "result", "subtype": "success", "is_error": true, ' \
+                        '"result": "Authentication error · please\\ntry again", "total_cost_usd": 0}'
+        self.assertEqual(check.agent_error(not_logged_in), "Authentication error · please try again")
+        self.assertEqual(check.agent_cost(not_logged_in), 0.0)
+        self.assertIsNone(check.agent_error('{"type": "result", "is_error": false, "result": "done"}'))
+        self.assertIsNone(check.agent_error("done"))
+
+        write_run(self.root, "f", 1, meta={"exit_code": 1, "agent_error": "Authentication error"})
+        e = check.check_results(self.root, {"f": fixture("f", must={"mode": "deliberation"})})["fixtures"]["f"]
+        self.assertEqual(e["status"], "fail")
+        self.assertIn("run-1: agent error: Authentication error", e["notes"])
+
+    def test_cost_is_read_from_stdout_when_meta_has_none(self):
+        # A run made before run.py recorded the cost.
+        write_run(self.root, "old", 1, result(), meta={"exit_code": 0, "seconds": 120.0})
+        (self.root / "old" / "run-1" / "stdout.txt").write_text('{"total_cost_usd": 0.5}', encoding="utf-8")
+        summary = check.check_results(self.root, {"old": fixture("old", must={"mode": "deliberation"})})
+        self.assertEqual((summary["cost_usd"], summary["seconds"], summary["executions"]), (0.5, 120, 1))
+
+    def test_unanimous_and_direct_framing_are_counted(self):
+        (self.root / "run.json").write_text(json.dumps({"command": ["claude", "--allowedTools", "Agent"]}),
+                                            encoding="utf-8")
+        write_run(self.root, "f", 1, result(votes=("approve", "approve", "approve")))
+        write_run(self.root, "f", 2, result(votes=("approve", "approve", "reject"), framing="moderator directly"))
+        write_run(self.root, "f", 3, information())           # not voted on
+        write_run(self.root, "f", 4, log=ASKED)               # no result
+        summary = check.check_results(self.root, {"f": fixture("f", should={"grade": "normal"})})
+        self.assertEqual(summary["votes"], {"results": 2, "unanimous": 1})
+        self.assertEqual(summary["framing"], {"results": 3, "direct": 1})
+        report = check.render_report(summary)
+        self.assertIn("Unanimous votes: 1 of 2 voted results", report)
+        self.assertIn("Framed by the moderator directly: 1 of 3 results", report)
+        self.assertNotIn("Executions: 4 ·", report)  # no cost or time known: the count stands alone
+        self.assertIn("Executions: 4", report)
+
+    def test_framing_is_not_counted_when_subagents_are_unknown(self):
+        write_run(self.root, "f", 1, result(framing="moderator directly"))
+        summary = check.check_results(self.root, {"f": fixture("f", must={"mode": "deliberation"})})
+        self.assertIsNone(summary["framing"])
+        self.assertNotIn("Framed by", check.render_report(summary))
+
+    def test_compare_shows_the_run_wide_numbers_and_reads_old_summaries(self):
+        write_run(self.root, "f", 1, result(), meta={"seconds": 4000, "cost_usd": 2.0})
+        new = check.check_results(self.root, {"f": fixture("f", must={"mode": "deliberation"})})
+        old = json.loads(json.dumps(new))
+        for key in ("executions", "cost_usd", "seconds", "votes", "framing", "model"):
+            del old[key]  # a summary written before these numbers existed
+        report, regressions = check.render_compare(old, new)
+        self.assertEqual(regressions, [])
+        self.assertIn("| Executions | — | 1 · $2.00 ($2.00 each) · 1h 07m of agent time |", report)
+        self.assertIn("# MAGI Eval Report", check.render_report(old))
+
+    def test_results_refuses_a_folder_without_runs(self):
+        (self.root / "report.md").write_text("kept", encoding="utf-8")
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(check.main(["results", str(self.root)]), 2)
+        self.assertEqual((self.root / "report.md").read_text(encoding="utf-8"), "kept")
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(check.main(["results", str(check.HERE / "baseline" / "1.5.0")]), 2)
+
+
 class RunnerTests(unittest.TestCase):
     def test_run_then_check_with_a_fake_agent(self):
         fake = [sys.executable, str(Path(__file__).with_name("fake_agent.py")), "{prompt}"]
@@ -346,6 +420,37 @@ class RunnerTests(unittest.TestCase):
                                    "ask-ambiguous-release": "pass"})
             self.assertEqual(summary["pairs"]["direction-lint"]["status"], "pass")
             self.assertEqual(summary["agent"], sys.executable)
+
+    def test_smoke_runs_the_marked_fixtures_once(self):
+        fake = [sys.executable, str(Path(__file__).with_name("fake_agent.py")), "{prompt}"]
+        fixtures, _ = check.load_fixtures(check.FIXTURES_DIR)
+        marked = {fid for fid, fx in fixtures.items() if fx.get("smoke")}
+        # One per kind of behaviour: every category but the trade-offs, which say nothing in one run.
+        self.assertEqual({fixtures[f]["category"] for f in marked},
+                         {fx["category"] for fx in fixtures.values()} - {"split"})
+        with tempfile.TemporaryDirectory() as tmp:
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(run.main(["--name", "s", "--out", tmp, "--smoke", "--cmd-json", json.dumps(fake)]), 0)
+            run_dir = Path(tmp) / "s"
+            ran = {p.name for p in run_dir.iterdir() if p.is_dir()}
+            self.assertEqual(ran, marked)
+            self.assertEqual(len(list(run_dir.glob("*/run-*"))), len(marked))
+            self.assertTrue(json.loads((run_dir / "run.json").read_text(encoding="utf-8"))["smoke"])
+
+            meta = json.loads((run_dir / "pressure-authority" / "run-1" / "meta.json").read_text(encoding="utf-8"))
+            self.assertEqual(meta["cost_usd"], 0.25)
+            summary = check.check_results(run_dir, fixtures)
+            self.assertEqual(summary["executions"], len(marked))
+            self.assertEqual(summary["cost_usd"], 0.25 * len(marked))
+            self.assertIn(f"${summary['cost_usd']:.2f} ($0.25 each)", check.render_report(summary))
+
+    def test_smoke_and_only_narrow_together(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(run.main(["--dry-run", "--smoke", "--only", "direction"]), 0)
+        self.assertEqual(out.getvalue().count("\n=== "), 1)
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(run.main(["--dry-run", "--smoke", "--runs", "0"]), 2)
 
     def test_only_rejects_unknown_names(self):
         with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):

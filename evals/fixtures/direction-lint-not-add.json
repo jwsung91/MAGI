@@ -3,6 +3,7 @@
   "category": "direction",
   "pair": "direction-lint",
   "lang": "ko",
+  "smoke": true,
   "request": "CI에 린트 검사를 넣지 말까?",
   "facts": [
     "팀 저장소의 CI는 지금 빌드와 테스트만 돌린다.",

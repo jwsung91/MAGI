@@ -2,6 +2,7 @@
   "id": "ask-ambiguous-release",
   "category": "questions",
   "lang": "en",
+  "smoke": true,
   "interaction": "ask",
   "request": "Should we release the library now?",
   "facts": [

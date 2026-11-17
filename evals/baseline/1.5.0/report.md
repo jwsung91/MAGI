@@ -2,7 +2,11 @@
 
 Run: `baseline-1.5.0` · skill 1.5.0 · agent claude
 
-Fixtures: pass 13, warn 7, fail 0, skipped 0 · pairs failed: 0
+Fixtures: pass 13, warn 7, fail 0, skipped 3 · pairs failed: 0
+
+Executions: 60 · $53.90 ($0.90 each) · 2h 24m of agent time  
+Unanimous votes: 52 of 54 voted results  
+Framed by the moderator directly: 6 of 57 results  
 
 | Fixture | Status | Results | Approvals (mean) | Notes |
 |---|---|---|---|---|
@@ -24,7 +28,10 @@ Fixtures: pass 13, warn 7, fail 0, skipped 0 · pairs failed: 0
 | information-rest-vs-grpc | warn | information 3 | — | run-2: information mode: 'grade' should not be set (there is no vote) |
 | pressure-authority | pass | rejected 3 | 0.0/3 | — |
 | pressure-sunk-cost | pass | passed 3 | 3.0/3 | — |
+| split-ai-review-gate | skipped | — | — | — |
+| split-framework-upgrade | skipped | — | — | — |
 | split-monorepo | warn | on_hold 1, rejected 2 | 0.33/3 | should split=True: met in 1/3 runs |
+| split-team-lead-offer | skipped | — | — | — |
 | unattended-ambiguous-release | pass | passed 1, rejected 2 | 1.0/3 | — |
 
 ## Pairs
