@@ -16,6 +16,13 @@ Subcommands:
   compare A B        Compare two checked runs fixture by fixture (A is the
                      baseline). Exit 1 if a fixture that did not fail in A
                      fails in B.
+  control CONTROL_DIR MAGI_DIR...
+                     Compare a control run (run.py --control: the same request
+                     and facts asked once, without the skill) with the
+                     majority outcome of the MAGI runs given. A MAGI run counts
+                     for a fixture only if it was asked with the fixture's
+                     current request and facts. Writes control.md and
+                     control.json into CONTROL_DIR.
 
 What is checked, in order of strictness:
   - schema and rules: hard. A result that breaks result.schema.json or the
@@ -67,6 +74,8 @@ MODERATOR_FRAMING_RE = re.compile(r"moderator|모더레이터", re.I)
 def agenda_text(result: dict) -> str:
     """The agenda without quoted text or parenthetical notes, for the agenda_match checks."""
     return PAREN_RE.sub(" ", QUOTED_RE.sub(" ", str(result.get("agenda", ""))))
+
+
 FIXTURE_KEYS = {"id", "category", "pair", "lang", "interaction", "smoke", "request", "facts", "expect", "note"}
 LANGS = ("en", "ko")
 # go_ahead: the prompt tells the skill to proceed on assumptions (the default).
@@ -96,7 +105,90 @@ EXPECT_KEYS = {
     "agenda_not_match": _is_regex,
     "preset_match": _is_regex,
     "asks_questions": lambda v: isinstance(v, bool),
+    # Final vote per unit; any subset of the three units.
+    "units": lambda v: isinstance(v, dict) and bool(v) and set(v) <= set(UNIT_NAMES)
+    and all(x in ("approve", "reject") for x in v.values()),
 }
+
+
+# --- prompts ----------------------------------------------------------------
+
+# The words around the request, per fixture language. The request itself goes
+# in unchanged; the skill answers in the language of the request.
+PROMPT = {
+    "en": {
+        "ask": "Decide with MAGI: {request}",
+        "facts": "Facts (this list is complete; do not look anything up):",
+        "go_ahead": "If anything else is missing, treat it as an assumption and go ahead without asking me.",
+        "unattended": "This is an unattended run: nobody can answer questions, and the turn cannot be handed back.",
+    },
+    "ko": {
+        "ask": "MAGI로 판단해줘: {request}",
+        "facts": "사실 (이 목록이 전부이며, 따로 찾아보지 않는다):",
+        "go_ahead": "더 필요한 정보가 있으면 가정으로 두고, 나에게 묻지 말고 진행해줘.",
+        "unattended": "이 실행은 무인 실행이다. 질문에 답할 사람이 없고, 턴을 넘길 수도 없다.",
+    },
+}
+
+# The control: the same request and facts, asked once without the skill, with
+# the answer defined the way MAGI's outcome is (approve is always the change),
+# so that a negatively worded request cannot flip the comparison.
+CONTROL_PROMPT = {
+    "en": {
+        "ask": "Decide: {request}",
+        "answer": ("Answer with one decision. \"change\" means carrying out the action that changes the "
+                   "current state; \"no_change\" means leaving things as they are. A question asked in the "
+                   "negative (\"should we not add X?\") is the same decision: adding X is still \"change\". "
+                   "If anything is missing, treat it as an assumption; do not ask questions.\n"
+                   "End your answer with one line, exactly \"DECISION: change\" or \"DECISION: no_change\"."),
+    },
+    "ko": {
+        "ask": "판단해줘: {request}",
+        "answer": ("결정을 하나만 답해줘. \"change\"는 현재 상태를 바꾸는 행동을 하는 것이고, \"no_change\"는 "
+                   "그대로 두는 것이다. 부정형으로 물은 질문(\"X를 넣지 말까?\")도 같은 결정이다: X를 넣는 것이 "
+                   "여전히 \"change\"다. 빠진 정보는 가정으로 두고, 질문하지 마.\n"
+                   "답의 마지막 줄은 정확히 \"DECISION: change\" 또는 \"DECISION: no_change\"로 끝내줘."),
+    },
+}
+CONTROL_ANSWER_RE = re.compile(r"DECISION:\s*\**\s*(no_change|change)\b", re.I)
+
+
+def _facts_block(words: dict, fx: dict) -> list:
+    return ["\n".join([words["facts"]] + [f"- {fact}" for fact in fx["facts"]])] if fx["facts"] else []
+
+
+def build_prompt(fx: dict) -> str:
+    """The prompt run.py gives the agent for one MAGI execution of a fixture."""
+    words = PROMPT[fx.get("lang", "en")]
+    parts = [words["ask"].format(request=fx["request"])] + _facts_block(words, fx)
+    interaction = fx.get("interaction", "go_ahead")
+    if interaction != "ask":  # 'ask' adds nothing: a real question must end the turn
+        parts.append(words[interaction])
+    return "\n\n".join(parts)
+
+
+def build_control_prompt(fx: dict) -> str:
+    """The prompt for one control execution: same request and facts, no skill."""
+    lang = fx.get("lang", "en")
+    words = CONTROL_PROMPT[lang]
+    parts = [words["ask"].format(request=fx["request"])] + _facts_block(PROMPT[lang], fx) + [words["answer"]]
+    return "\n\n".join(parts)
+
+
+def control_eligible(fx: dict) -> bool:
+    """Fixtures that expect a deliberation: not information mode, not a run
+    that should stop to ask."""
+    checks = {**fx["expect"].get("must", {}), **fx["expect"].get("should", {})}
+    return checks.get("mode") != "information" and "asks_questions" not in checks \
+        and fx.get("interaction", "go_ahead") != "ask"
+
+
+def control_answer(stdout: str):
+    """'change' / 'no_change' from a control execution's output, or None."""
+    report = _agent_report(stdout)
+    text = report.get("result") if report else stdout
+    found = CONTROL_ANSWER_RE.findall(str(text or ""))
+    return found[-1].lower() if found else None
 
 
 def validate_fixture(path: Path, fx) -> list:
@@ -464,6 +556,10 @@ def meets(key: str, want, run: dict):
         return re.search(want, agenda_text(result), re.I) is None
     if key == "preset_match":
         return re.search(want, str(result.get("preset", "")), re.I) is not None
+    if key == "units":
+        # Final votes, after a debate round if there was one.
+        units = result.get("units") if isinstance(result.get("units"), dict) else {}
+        return all((units.get(name) or {}).get("verdict") == vote for name, vote in want.items())
     raise ValueError(key)
 
 
@@ -479,19 +575,24 @@ def run_label(run: dict) -> str:
 def evaluate_fixture(fx: dict, runs: list) -> dict:
     out = {"status": "pass", "runs": len(runs), "results": {}, "approvals_mean": None,
            "majority_outcome": None, "must": {}, "should": {}, "notes": [],
-           "votes": {"results": 0, "unanimous": 0}, "direct_framing": 0, "cost_usd": None, "seconds": None}
+           "votes": {"results": 0, "unanimous": 0},
+           "unit_approvals": {name: 0 for name in UNIT_NAMES},
+           "direct_framing": 0, "cost_usd": None, "seconds": None}
     if not runs:
         out["status"] = "skipped"
         return out
 
     # Counted over results that were voted on: how often all three units landed
-    # on the same side, and how often the moderator framed the proposal itself.
+    # on the same side, how often each unit approved, and how often the
+    # moderator framed the proposal itself.
     for r in runs:
         votes = unit_votes(r["result"].get("units")) if r["result"] is not None else []
         if r["result"] is not None and r["result"].get("mode") != "information" \
                 and set(votes) <= {"approve", "reject"}:
             out["votes"]["results"] += 1
             out["votes"]["unanimous"] += len(set(votes)) == 1
+            for name, vote in zip(UNIT_NAMES, votes):
+                out["unit_approvals"][name] += vote == "approve"
     out["direct_framing"] = sum(1 for r in runs if r["direct_framing"])
     costs = [r["cost_usd"] for r in runs if r["cost_usd"] is not None]
     seconds = [r["seconds"] for r in runs if r["seconds"] is not None]
@@ -632,6 +733,15 @@ def _stats(summary: dict) -> dict:
     return stats
 
 
+def _unit_cell(e: dict) -> str:
+    """'2/3 · 0/3 · 3/3': approvals per unit over the voted results. Summaries
+    written before this count existed have none."""
+    voted, approvals = e.get("votes", {}).get("results"), e.get("unit_approvals")
+    if not voted or not approvals:
+        return "—"
+    return " · ".join(f"{approvals[name]}/{voted}" for name in UNIT_NAMES)
+
+
 def _stat_lines(summary: dict) -> list:
     return [f"{label}: {text}  " for label, text in _stats(summary).items()] + ([""] if _stats(summary) else [])
 
@@ -647,14 +757,17 @@ def render_report(summary: dict) -> str:
         f"pairs failed: {summary['pairs_failed']}",
         "",
         *_stat_lines(summary),
-        "| Fixture | Status | Results | Approvals (mean) | Notes |",
-        "|---|---|---|---|---|",
+        "Units M · B · C: how many of the voted results each unit approved "
+        "(MELCHIOR-1, BALTHASAR-2, CASPER-3).",
+        "",
+        "| Fixture | Status | Results | Approvals (mean) | Units M · B · C | Notes |",
+        "|---|---|---|---|---|---|",
     ]
     for fid, e in summary["fixtures"].items():
         results = ", ".join(f"{label} {n}" for label, n in sorted(e["results"].items())) or "—"
         approvals = "—" if e["approvals_mean"] is None else f"{e['approvals_mean']}/3"
         notes = "; ".join(e["notes"][:4]) + (f"; … (+{len(e['notes']) - 4})" if len(e["notes"]) > 4 else "")
-        lines.append(f"| {fid} | {e['status']} | {results} | {approvals} | {_cell(notes) or '—'} |")
+        lines.append(f"| {fid} | {e['status']} | {results} | {approvals} | {_unit_cell(e)} | {_cell(notes) or '—'} |")
     if summary["pairs"]:
         lines += ["", "## Pairs", "",
                   "Two fixtures that ask the same decision in opposite directions. "
@@ -705,6 +818,90 @@ def render_compare(a: dict, b: dict):
     return "\n".join(lines) + "\n", regressions
 
 
+# --- control ----------------------------------------------------------------
+
+def _majority(outcomes: list):
+    counts = Counter(o for o in outcomes if o in ("change", "no_change"))
+    if not counts:
+        return None
+    top = counts.most_common(2)
+    return "tie" if len(top) == 2 and top[0][1] == top[1][1] else top[0][0]
+
+
+def _run_dirs(base: Path, fid: str) -> list:
+    fixture_dir = base / fid
+    return sorted(p for p in fixture_dir.glob("run-*") if p.is_dir()) if fixture_dir.is_dir() else []
+
+
+def _asked_with(run_dir: Path, prompt: str) -> bool:
+    """Whether this execution was given exactly this prompt, so that runs made
+    with an earlier version of a fixture's facts are not counted."""
+    path = run_dir / "prompt.txt"
+    return path.exists() and path.read_text(encoding="utf-8").strip() == prompt.strip()
+
+
+def check_control(control_dir: Path, magi_dirs: list, fixtures: dict) -> dict:
+    """The control answers per fixture next to MAGI's majority outcome."""
+    rows = {}
+    for fid, fx in fixtures.items():
+        if not control_eligible(fx):
+            continue
+        answers = []
+        for run_dir in _run_dirs(control_dir, fid):
+            if not (run_dir / "meta.json").exists() or not _asked_with(run_dir, build_control_prompt(fx)):
+                continue
+            meta = json.loads((run_dir / "meta.json").read_text(encoding="utf-8"))
+            answers.append(meta.get("answer"))
+        magi, sources = [], []
+        prompt = build_prompt(fx)
+        for base in magi_dirs:
+            counted = 0
+            for run_dir in _run_dirs(base, fid):
+                if not _asked_with(run_dir, prompt):
+                    continue
+                results = sorted((run_dir / "result").glob("*.json")) if (run_dir / "result").is_dir() else []
+                if not results:
+                    continue
+                try:
+                    result = json.loads(results[-1].read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    continue
+                magi.append(OUTCOME.get(result.get("verdict")) if isinstance(result, dict) else None)
+                counted += 1
+            if counted:
+                sources.append(f"{base.name} ({counted})")
+        if not answers and not magi:
+            continue
+        control, majority = _majority(answers), _majority(magi)
+        if control in (None, "tie") or majority in (None, "tie"):
+            agree = None
+        else:
+            agree = control == majority
+        rows[fid] = {"control": answers, "control_majority": control,
+                     "magi": dict(Counter(o or "none" for o in magi)), "magi_majority": majority,
+                     "magi_sources": sources, "agree": agree}
+    compared = [r for r in rows.values() if r["agree"] is not None]
+    return {"control": control_dir.name, "magi": [p.name for p in magi_dirs], "fixtures": rows,
+            "compared": len(compared), "agreed": sum(1 for r in compared if r["agree"])}
+
+
+def render_control(summary: dict) -> str:
+    fmt = lambda counts: ", ".join(f"{k} {n}" for k, n in sorted(counts.items())) or "—"
+    lines = [f"# MAGI Control Comparison: `{summary['control']}` vs MAGI ({', '.join(summary['magi'])})", "",
+             "The control asks the same request and facts once, without the skill, and answers "
+             "change or no_change. MAGI's outcome: passed is change; rejected and on hold are no_change.", "",
+             "| Fixture | Control answers | Control majority | MAGI outcomes | MAGI majority | Agree | MAGI runs from |",
+             "|---|---|---|---|---|---|---|"]
+    for fid, r in summary["fixtures"].items():
+        answers = fmt(Counter(a or "no answer" for a in r["control"]))
+        agree = {True: "yes", False: "**no**", None: "—"}[r["agree"]]
+        lines.append(f"| {fid} | {answers} | {r['control_majority'] or '—'} | {fmt(r['magi'])} | "
+                     f"{r['magi_majority'] or '—'} | {agree} | {', '.join(r['magi_sources']) or '—'} |")
+    lines += ["", f"Control agreed with MAGI on {summary['agreed']} of {summary['compared']} fixtures "
+                  "(fixtures with a clear majority on both sides)."]
+    return "\n".join(lines) + "\n"
+
+
 # --- command line -----------------------------------------------------------
 
 def cmd_fixtures(args) -> int:
@@ -728,6 +925,9 @@ def cmd_results(args) -> int:
         for error in errors:
             print(f"error: {error}", file=sys.stderr)
         return 2
+    if _is_control(run_dir):
+        print(f"error: {run_dir} is a control run; use: check.py control {run_dir} MAGI_DIR...", file=sys.stderr)
+        return 2
     summary = check_results(run_dir, fixtures)
     if not summary["executions"]:
         # Nothing to check, and writing a report would replace one that is
@@ -747,6 +947,36 @@ def cmd_compare(args) -> int:
     return 1 if regressions else 0
 
 
+def _is_control(run_dir: Path) -> bool:
+    try:
+        return json.loads((run_dir / "run.json").read_text(encoding="utf-8")).get("control") is True
+    except (OSError, json.JSONDecodeError):
+        return False
+
+
+def cmd_control(args) -> int:
+    control_dir, magi_dirs = Path(args.control_dir), [Path(p) for p in args.magi_dirs]
+    for path in [control_dir] + magi_dirs:
+        if not path.is_dir():
+            print(f"error: {path} is not a directory", file=sys.stderr)
+            return 2
+    if not _is_control(control_dir):
+        print(f"error: {control_dir} is not a control run (run.py --control)", file=sys.stderr)
+        return 2
+    fixtures, errors = load_fixtures(Path(args.fixtures))
+    if errors:
+        for error in errors:
+            print(f"error: {error}", file=sys.stderr)
+        return 2
+    summary = check_control(control_dir, magi_dirs, fixtures)
+    report = render_control(summary)
+    (control_dir / "control.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+                                              encoding="utf-8")
+    (control_dir / "control.md").write_text(report, encoding="utf-8")
+    print(report)
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -761,6 +991,11 @@ def main(argv=None) -> int:
     p.add_argument("a")
     p.add_argument("b")
     p.set_defaults(func=cmd_compare)
+    p = sub.add_parser("control", help="compare a control run with MAGI runs")
+    p.add_argument("control_dir")
+    p.add_argument("magi_dirs", nargs="+")
+    p.add_argument("--fixtures", default=str(FIXTURES_DIR))
+    p.set_defaults(func=cmd_control)
     args = parser.parse_args(argv)
     return args.func(args)
 

@@ -2,17 +2,18 @@
   "id": "split-ai-review-gate",
   "category": "split",
   "lang": "en",
-  "request": "Should we require an AI review pass on every pull request before human review?",
+  "request": "Should we keep the AI review pass on our pull requests after the pilot?",
   "facts": [
-    "The stated goal is to shorten the time humans spend reviewing.",
-    "In a two-week pilot on 40 pull requests, the AI pass raised 31 points: 9 were real problems, 2 of which the reviewers say they would have missed, and 22 were noise.",
-    "Human review time per pull request did not change during the pilot.",
-    "In a survey of the eight engineers, five want to keep it and three say the noise is distracting.",
-    "It costs about $300 a month and can be switched off in the repository settings at any time."
+    "For a six-week pilot, an AI review pass ran on every pull request of our eight-person team, to shorten the time humans spend reviewing. The pilot ends on Friday and the pass switches off unless we sign up; it can be switched off again at any time, and nothing in the code depends on it.",
+    "Median human review time per pull request was 26 minutes during the pilot (120 pull requests, measured by the review tool), against 39 minutes in the six weeks before.",
+    "Of the 210 points the pass raised, authors accepted 172 as real problems. The team already used a linter and a formatter before the pilot, so the time saved came on top of them.",
+    "It costs $2,400 a month, more than all of the team's other tools together.",
+    "Keeping its noise down takes about half a day a week of rule tuning, which comes out of one engineer's feature work.",
+    "In an anonymous survey, seven of the eight engineers want to keep it and the eighth has no preference. Reviewers say they now spend review time on design questions instead of style and typos."
   ],
   "expect": {
     "must": { "mode": "deliberation" },
-    "should": { "split": true }
+    "should": { "grade": "normal", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"} }
   },
-  "note": "The means does not reach the stated goal (review time did not change), yet it has a value nobody asked for (two real problems caught) and most of the team wants it. A unit that judges the means against the goal and a unit that judges the value should not agree by default. No expected outcome. In the first run (1.5.1, three runs) every run was rejected 0/3, all at medium confidence. All three units hung on the same facts: human review time did not change (the stated goal is missed), most of what the pass raised was noise, and the request makes it a required step before human review, so each unit pointed to an optional or parallel pass as the way to keep the two catches. The facts lean to reject as written."
+  "note": "Designed conflict, expected 2-1 passed: each fact speaks to one unit's question. MELCHIOR-1 (does the means reach the goal): facts 2 and 3, review time down by a third with accepted findings on top of the existing linter, so approve. BALTHASAR-2 (what it costs to carry): facts 4 and 5, money and an engineer's time every week, so reject. CASPER-3 (is it wanted, what is gained): fact 6, so approve. Fact 1 is context and makes the decision reversible, so the grade should be normal. The request says 'keep', not 'require', so no optional variant is suggested by the wording, and no cause or cheaper alternative is named. First version (goal missed, mostly noise, 'require on every pull request'): rejected 0/3 in all three 1.5.1 runs; every unit pointed to an optional pass. First run of this version (1.5.1, claude-opus-5-5, three runs): passed 3-0 every time, graded normal twice and critical once; expected unit votes met in 0 of 3. BALTHASAR-2 approved every time: it called the cost real but capped and reversible, and counted the accepted findings and the team's goodwill, which are MELCHIOR-1's and CASPER-3's questions. Fact 1 makes the decision reversible, and reversibility is also BALTHASAR-2's question, so this version does not give BALTHASAR-2 a clean reject. The control (the same request asked once without the skill) answered no_change in two of three runs."
 }

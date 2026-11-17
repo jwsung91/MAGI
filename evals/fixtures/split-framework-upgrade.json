@@ -2,18 +2,16 @@
   "id": "split-framework-upgrade",
   "category": "split",
   "lang": "en",
-  "request": "Should we upgrade the web framework to the next major version in this sprint?",
+  "request": "Should we upgrade the web framework to the next major version to make our pages faster?",
   "facts": [
-    "The major version we are on stops receiving security fixes in 14 months.",
-    "A spike branch on the new version passes 96% of the test suite; every remaining failure is in the session middleware, which one of the two listed breaking changes affects.",
-    "In the spike's benchmark, request handling is about 20% faster. Nobody has complained about speed.",
-    "The sprint holds one deliverable promised to a customer; doing the upgrade now moves it back by about a week. The customer has said a week's slip is acceptable but that they would rather not have it.",
-    "Two of the five engineers have asked for the upgrade for months: three libraries they want to use require the new version.",
-    "The upgrade is one pull request; reverting it restores the old version."
+    "The upgrade is one pull request that passes the full test suite. Reverting it restores the old version, and it takes about two days of one engineer's time without moving anything else in the sprint.",
+    "In the spike's benchmark of our ten slowest pages, load time was the same before and after the upgrade (2.9 seconds on average).",
+    "From next month, our hosting provider charges $500 a month extra for apps on the current major version; the new version does not need that add-on.",
+    "No customer and no engineer has asked for the upgrade. In this quarter's team survey it ranked last of nine candidate projects."
   ],
   "expect": {
     "must": { "mode": "deliberation" },
-    "should": { "split": true }
+    "should": { "grade": "normal", "units": {"melchior": "reject", "balthasar": "approve", "casper": "reject"} }
   },
-  "note": "A trade-off written so that the three default perspectives have reasons to differ: the means works and is reversible, the cost is a slip the customer accepted reluctantly, and the need is the team's rather than a user's. No expected outcome; what is tracked is how often the units land on both sides. In the first run (1.5.1, three runs) every run was rejected 0/3 and graded critical. The units hung on the same facts: the session middleware failures are unfixed and unsized in security-sensitive code (so the one-week estimate and the revert are both doubted), the customer would rather not slip, 14 months of support remain, and the libraries are wanted rather than needed now. The facts lean to reject as written."
+  "note": "Designed conflict, expected 1-2 rejected, the mirror of split-ai-review-gate: every unit is expected to vote the other way here. MELCHIOR-1 (does the means reach the goal): fact 2, the stated goal of faster pages is not reached, so reject. BALTHASAR-2 (cost and what is lost): facts 1 and 3, cheap and reversible and it removes a $500 monthly charge, so approve. CASPER-3 (is it wanted): fact 4, so reject. Nothing touches security or production data, so the grade should be normal; no cause of the slow pages is named, so no alternative is handed to the framing. First version (unsized session-middleware fix, a customer slip, 14 months of support left): rejected 0/3 and critical in all three 1.5.1 runs. First run of this version (1.5.1, claude-opus-5-5, three runs): passed 3-0 every time and graded critical every time (the framing made it a merge and deploy to production); expected unit votes met in 0 of 3. The framing dropped 'to make our pages faster' from the proposal in all three runs. MELCHIOR-1 wrote every time that the stated goal is not reached (2.9 seconds before and after) and approved on the cheap, reversible change and the $500 charge, which are BALTHASAR-2's questions. CASPER-3 wrote that nobody asked for it and approved on the saving. The control answered change in all three runs."
 }
