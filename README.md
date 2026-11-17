@@ -71,7 +71,7 @@ cp -r MAGI/skills/magi ~/.claude/skills/magi
 
 A manual copy does not update itself. If you switch to the plugin, delete `~/.claude/skills/magi` first.
 
-**Codex (plugin)**
+**Codex (plugin)** — not run yet; see Host support
 
 ```bash
 codex plugin marketplace add jwsung91/MAGI
@@ -86,7 +86,7 @@ Download `magi-plugin-<version>.zip` from the [latest release](https://github.co
 
 The Gemini app refuses skills that contain executable files, so upload `magi-chat-<version>.zip` from the [latest release](https://github.com/jwsung91/MAGI/releases/latest): the same skill without `scripts/` (the optional progress-log helper, which a chat app cannot run anyway). The units are written one at a time and the result says "Framing: moderator directly".
 
-**Gemini CLI (extension)**
+**Gemini CLI (extension)** — not run yet; see Host support
 
 ```bash
 gemini extensions install https://github.com/jwsung91/MAGI
@@ -103,6 +103,20 @@ npx skills add jwsung91/MAGI --skill magi
 ```
 
 Or copy `skills/magi` into the agent's skills folder by hand (for example `.agents/skills/magi`).
+
+## Host support
+
+MAGI is developed on Claude. Other hosts load the same skill; what differs is whether they can run the units as separate agents and whether they stop to ask.
+
+| Host | Units | Questions before deliberation | Status |
+|---|---|---|---|
+| Claude app, Claude Code | Separate subagents | Asks and waits | Primary host |
+| ChatGPT (plugin upload) | One agent, each unit in turn | Did not stop in test runs; readings of an ambiguous request are deliberated as separate proposals | Tried by hand, 1.3.0 to 1.4.0 |
+| Gemini app (skill upload) | One agent, each unit in turn | Varied between runs and models | Tried by hand, 1.3.0 to 1.4.0 |
+| Codex CLI, Gemini CLI | Depends on the host | Not known | Manifests only; not run yet |
+| Other agents via `npx skills` | Depends on the host | Not known | Install checked; not run yet |
+
+Where one agent writes all three units, the result says so on its Limitations line; treat such a result as one model looking from three angles, not three independent reviews.
 
 ## Versions
 

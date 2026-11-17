@@ -6,11 +6,13 @@ The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versi
 
 Fixes from test runs in ChatGPT and the Gemini app with 1.3.2, where one agent writes everything and no subagents exist.
 
-- New "Flow" section at the top. Step 3 makes asking the user a hard stop: questions end the turn, the moderator does not answer them itself, and an ambiguous request whose readings lead to different proposals is a question, not an assumption. Both hosts had skipped the questions and filled in what the request meant. If the host cannot stop (it runs the skill as one uninterrupted task), each competing reading becomes its own proposal and the unasked questions are listed in the result.
-- Input isolation also binds the moderator when it writes the framing and the units itself: a personal detail about the user enters only through the list of facts. A Gemini run had units cite the user's job and career from outside the material.
-- The framing line says "framing agent" only when a separate agent framed the proposal; units written in turn by one agent are not called independent agents, and the closing limitation line says so.
-- Follow-up resolution format: the stray "Then **Resolution:**" template line is replaced by a "Follow-up 1: … — resolution" line above each table. A run had copied the template text and put a confidence value in a verdict cell.
-- Self-check before finishing: questions, framing line, facts, cell values, debate answers from every unit, both unanimity points, translated headings.
+- New "Flow" section near the top: gather facts, frame, ask the user and stop, review, resolve, self-check, report.
+- Questions for the user end the turn: the moderator does not deliberate in the same turn or answer them itself. A request whose readings lead to different proposals is a question, not an assumption. Both hosts had skipped the questions and filled in what the request meant.
+- Fallback when deliberation happens without the user having been asked (an unattended run, or a host that does not hand the turn back): the reading closest to the user's words is the main proposal, each other reading a follow-up, and the questions that were not asked are listed under Additional information.
+- Input isolation also binds the moderator when it writes the framing and the units itself: a personal detail about the user enters only through the list of facts. A Gemini run had units cite the user's job from outside the material.
+- The framing line says "framing agent" only when a separate agent framed the proposal, and units written in turn by one agent are not called independent agents.
+- Output format: a **Limitations** line at the end says how the units were run; each follow-up has its own grade and a "Follow-up 1: … — grade — resolution" line (the stray "Then Resolution" template line is gone); headings marked "(if any)" are left out when they do not apply, every other heading is required.
+- Self-check before reporting: questions, framing line, facts, cell values, debate answers from every unit, both unanimity points, the Limitations line, translated headings. Subagent output that fails is re-run, never edited.
 - The result JSON format is unchanged (version 2).
 
 ## [1.3.2]
