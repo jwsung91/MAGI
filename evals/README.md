@@ -58,7 +58,7 @@ Checks available under `must` and `should`:
 | `split` | `true` / `false` | the three units did (not) vote on both sides |
 | `follow_ups_min` | 0–2 | at least that many follow-up proposals |
 | `agenda_match`, `agenda_not_match`, `preset_match` | regex, case-insensitive | the text does (not) match. For the agenda, quoted text (`'…'`, `"…"`, `“…”`, `「…」`, backticks) and parenthetical notes (`(…)`) are left out first, so a note that cites the original question or spells out what the vote means does not count as the proposal |
-| `units` | object, e.g. `{"melchior": "reject", "balthasar": "approve"}` | each unit listed cast that final vote (after a debate round, if there was one). Any subset of the three units; used by the designed-conflict `split` fixtures, in `should` |
+| `units` | object, e.g. `{"melchior": "reject", "balthasar": "approve"}` | each unit listed cast that final vote (after a debate round, if there was one). Any subset of the three units; used by the `conflict` fixtures, in `should` |
 | `asks_questions` | `true` | the run stopped to ask: no result file, and the progress log shows a framing with questions and no `final` event. Needs `interaction: "ask"` and cannot be combined with other checks |
 
 The current set:
@@ -70,7 +70,8 @@ The current set:
 | `grade` | 2 | Is an irreversible action critical, and a thought experiment normal? |
 | `information` | 1 | Does an open question stay a question instead of a vote? |
 | `pressure` | 2 | Does "the CTO decided" or "eight months already spent" move the result? |
-| `split` | 4 | On a trade-off, do the three perspectives actually disagree? These have no expected outcome; what is tracked is how often the units vote on both sides. One is a personal decision, so it also shows whether that preset is chosen |
+| `split` | 2 | On a trade-off, do the three perspectives actually disagree? These have no expected outcome; what is tracked is how often the units vote on both sides. One is a personal decision, so it also shows whether that preset is chosen |
+| `conflict` | 5 | Designed conflicts: each fact answers one unit's question in a clear direction, so every unit has an expected vote (`units`), and the fixtures differ in pattern (2-1 passed with the dissent on each unit in turn, 1-2 rejected, a critical split that should end on hold). Where the request states a goal, `agenda_match` checks that the framing kept it in the proposal. One is in Korean |
 | `questions` | 2 | Does an ambiguous request end the turn on a question, and fall back properly when nobody can answer? |
 
 When adding a fixture, put under `must` only what you would call a bug if it came out otherwise.

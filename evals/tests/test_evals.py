@@ -505,7 +505,7 @@ class RunnerTests(unittest.TestCase):
         marked = {fid for fid, fx in fixtures.items() if fx.get("smoke")}
         # One per kind of behaviour: every category but the trade-offs, which say nothing in one run.
         self.assertEqual({fixtures[f]["category"] for f in marked},
-                         {fx["category"] for fx in fixtures.values()} - {"split"})
+                         {fx["category"] for fx in fixtures.values()} - {"split", "conflict"})
         with tempfile.TemporaryDirectory() as tmp:
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(run.main(["--name", "s", "--out", tmp, "--smoke", "--cmd-json", json.dumps(fake)]), 0)

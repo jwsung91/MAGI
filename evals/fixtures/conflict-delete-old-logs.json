@@ -1,0 +1,16 @@
+{
+  "id": "conflict-delete-old-logs",
+  "category": "conflict",
+  "lang": "en",
+  "request": "Should we delete user activity logs older than 90 days, to cut our storage bill?",
+  "facts": [
+    "Activity logs older than 90 days make up 70% of our stored data. Deleting them would cut the storage bill from $9,000 to $2,700 a month.",
+    "Deletion cannot be undone, and the logs are our only record of what users did. In each of the last two years a legal request asked for user records older than 90 days, and the company answered it from these logs.",
+    "The finance team asked for the cut. The product and support teams say nobody has opened a log older than 90 days in the past year, and they want the cut too."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "grade": "critical", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"}, "verdict": ["on_hold"], "agenda_match": "storage|bill|cost" }
+  },
+  "note": "Designed conflict on a critical proposal, expected on hold: one aspect objects and should keep objecting through the debate round. MELCHIOR-1: fact 1, deletion reaches the goal (the bill falls by 70%), so approve. BALTHASAR-2: fact 2, irreversible loss of the only record, which legal requests have needed twice, so reject. CASPER-3: fact 3, every stakeholder named wants it, so approve. Irreversible data deletion makes the grade critical; a split goes to one debate round and, still split, to on hold. No cheaper storage option is named, so any alternative comes from the framing; under the experiment's rule only MELCHIOR-1 may vote on one."
+}
