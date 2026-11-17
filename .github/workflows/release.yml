@@ -44,6 +44,15 @@ jobs:
           cd skills
           zip -r "../magi-${{ steps.version.outputs.version }}.zip" magi -x '*/__pycache__/*'
 
+      # Chat zip: the skill folder without scripts/, for chat apps that refuse
+      # skills containing executable files (the Gemini app). Only the optional
+      # progress-log helper is left out; the skill skips logging without it.
+      - name: Build chat zip
+        if: steps.version.outputs.exists == 'false'
+        run: |
+          cd skills
+          zip -r "../magi-chat-${{ steps.version.outputs.version }}.zip" magi -x 'magi/scripts/*' '*/__pycache__/*'
+
       # Plugin zip for ChatGPT and Codex uploads: the Codex manifest and
       # skills/<name>/SKILL.md at the archive root. Files are made readable
       # (644) because uploads with owner-only permissions can fail to register.
@@ -63,7 +72,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           python3 .github/scripts/release_tools.py notes "$VERSION" > notes.md
-          gh release create "v$VERSION" "magi-$VERSION.zip" "magi-plugin-$VERSION.zip" \
+          gh release create "v$VERSION" "magi-$VERSION.zip" "magi-chat-$VERSION.zip" "magi-plugin-$VERSION.zip" \
             --target "$GITHUB_SHA" \
             --title "MAGI $VERSION" \
             --notes-file notes.md
