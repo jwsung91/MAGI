@@ -14,5 +14,5 @@
     "must": { "mode": "deliberation" },
     "should": { "split": true }
   },
-  "note": "The means does not reach the stated goal (review time did not change), yet it has a value nobody asked for (two real problems caught) and most of the team wants it. A unit that judges the means against the goal and a unit that judges the value should not agree by default. No expected outcome."
+  "note": "The means does not reach the stated goal (review time did not change), yet it has a value nobody asked for (two real problems caught) and most of the team wants it. A unit that judges the means against the goal and a unit that judges the value should not agree by default. No expected outcome. In the first run (1.5.1, three runs) every run was rejected 0/3, all at medium confidence. All three units hung on the same facts: human review time did not change (the stated goal is missed), most of what the pass raised was noise, and the request makes it a required step before human review, so each unit pointed to an optional or parallel pass as the way to keep the two catches. The facts lean to reject as written."
 }

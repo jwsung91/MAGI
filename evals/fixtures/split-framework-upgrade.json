@@ -15,5 +15,5 @@
     "must": { "mode": "deliberation" },
     "should": { "split": true }
   },
-  "note": "A trade-off written so that the three default perspectives have reasons to differ: the means works and is reversible, the cost is a slip the customer accepted reluctantly, and the need is the team's rather than a user's. No expected outcome; what is tracked is how often the units land on both sides."
+  "note": "A trade-off written so that the three default perspectives have reasons to differ: the means works and is reversible, the cost is a slip the customer accepted reluctantly, and the need is the team's rather than a user's. No expected outcome; what is tracked is how often the units land on both sides. In the first run (1.5.1, three runs) every run was rejected 0/3 and graded critical. The units hung on the same facts: the session middleware failures are unfixed and unsized in security-sensitive code (so the one-week estimate and the revert are both doubted), the customer would rather not slip, 14 months of support remain, and the libraries are wanted rather than needed now. The facts lean to reject as written."
 }

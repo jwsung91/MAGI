@@ -16,5 +16,5 @@
     "must": { "mode": "deliberation" },
     "should": { "split": true, "preset_match": "personal" }
   },
-  "note": "A personal decision with a real gain (the say in direction that was asked for), a real cost (the work that is enjoyed, the current project) and a mixed signal on fit. The only split fixture outside engineering, so it also shows whether the personal-decision preset is chosen. No expected outcome."
+  "note": "A personal decision with a real gain (the say in direction that was asked for), a real cost (the work that is enjoyed, the current project) and a mixed signal on fit. The only split fixture outside engineering, so it also shows whether the personal-decision preset is chosen. No expected outcome. In the first run (1.5.1, three runs, personal-decision preset every time, graded critical) two runs passed 3/0 and one was on hold at 2/1, the risk unit rejecting over the previous lead's overload and no management experience. Approve leaned on the say in direction asked for, the external hire as the alternative and the one-year way back. The only split fixture that split."
 }
