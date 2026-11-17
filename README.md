@@ -26,6 +26,7 @@ The agent that frames the proposal is separate from the one that summarizes the 
 | Critical | Hard to reverse, or affects safety, security, data, or significant cost | Passes only if unanimous; on a split, one debate round and a revote; still split → on hold |
 
 - Every vote is a plain approve or reject; there is no conditional approval. A condition is settled before the vote (checked as a fact, asked of the user, or proposed as a modified version), and advice for carrying out the decision is kept as a non-binding recommendation.
+- Approve always means the change from the current state, so a question asked in the negative ("should we not add X?") gets the same result as its affirmative form. The result names the default (what happens if the proposal does not pass) and marks it when the default is itself harmful.
 - If any unit objects to the grade, the item is raised to critical.
 - In the debate round, every unit, majority as well as minority, must answer the other side's strongest argument. A unit may change position only by citing an argument another unit raised in the first round that it had not already weighed itself; the moderator checks this, and a change that fails keeps the unit's first-round verdict.
 - If a unit fails, the other two do not vote alone; the result is reported as an **error**.

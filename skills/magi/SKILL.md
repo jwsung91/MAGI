@@ -57,7 +57,9 @@ Without subagents, the moderator writes the framing and the units itself and can
 Takes the original request, the list of facts, and (if any) the user-specified preset, and produces the following.
 
 1. **Mode:** deliberation / information. If turning the question into approve/reject would change its meaning (an explanation, a comparison, an open question), use information mode (section 4).
-2. **Proposal:** one sentence that can be answered with approve or reject. State what approve and what reject each mean, without overlap.
+2. **Proposal:** one sentence that can be answered with approve or reject. State what approve and what reject each mean, without overlap, each as a concrete resulting state.
+   - **Approve is the change.** Frame the proposal so that approve carries out the action that changes the current state, and reject leaves things as they are. A request asked in the negative ("should we not add X?") is the same decision as its affirmative form: frame it as "add X" and note that it was asked in the negative. Otherwise the same three votes give a different result depending only on how the question was worded. Removing something that already exists is not the negative of adding it: there the change is the removal.
+   - **Name the default.** The default is what stays or happens if the proposal does not pass. State it, and say whether the default is itself harmful or hard to reverse (a vulnerability left open, a deadline missed). "Do nothing" is not always the safe side.
    - **One action per proposal.** Do not bundle actions that can be decided separately (e.g. buying a new device and selling the old one; whether to take time off and how to take it). Make the most essential action the **main proposal** and split the rest into **follow-up proposals** (at most 2).
    - **Use the targets the user specified as they are.** Do not widen a model, date, or option the user named into a "family" or "similar items". Alternatives are listed by name only under item 6 (options outside the binary).
 3. **Grade:** normal / critical, with a one-line reason (section 2). Grade each follow-up proposal separately; it need not match the main proposal's grade.
@@ -85,7 +87,7 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 | Normal | Reversible and limited in impact | 2/3 majority |
 | Critical | Hard to reverse, or affects safety, security, data loss, production environments, or large costs | Passes if unanimous (rejected if all reject; on a split, one debate round then a revote; still split → on hold) |
 
-The framing agent decides the grade and gives a one-line reason. When in doubt, treat it as critical.
+The framing agent decides the grade and gives a one-line reason. When in doubt, treat it as critical. Either side can make a proposal critical: the action, or the default if the proposal does not pass.
 
 A thought experiment or discussion question, where nothing will actually be carried out, is **normal** even if its subject is life or safety. The critical grade exists to stop irreversible actions; applied to a question with no action, it mostly turns splits into "on hold" without protecting anyone.
 
@@ -94,7 +96,7 @@ A thought experiment or discussion question, where nothing will actually be carr
 Independence is the core.
 - If subagents can be launched, run the three units as **separate agents** that cannot see each other's results.
 - If not, write one unit at a time, without referring to or aligning with earlier units' conclusions, and say on the result's **Limitations** line (section 5) that one agent wrote all three units in turn. Do not call such units independent agents.
-- Pass the framing result (proposal, premises, preset perspectives, options outside the binary) to the three units unchanged. If there are follow-up proposals, each unit gives a separate verdict on the main proposal and on each follow-up.
+- Pass the framing result (proposal, default, premises, preset perspectives, options outside the binary) to the three units unchanged. If there are follow-up proposals, each unit gives a separate verdict on the main proposal and on each follow-up.
 - Each unit prompt includes the input isolation instruction (section 1).
 
 | Unit | Perspective | Main questions |
@@ -163,7 +165,7 @@ Decide in this order.
      If a change fails, re-run that unit once, stating which condition failed. If it fails again, the change is not accepted: the unit's round-1 verdict stands, and the result records the rejected change and the reason. Do not rewrite the unit's output to make it pass.
    - A unit that keeps its position needs no check, but its rebuttals and concessions are recorded.
    - If the revote is still split, the result is **on hold** (until the rejecting unit's concerns are resolved).
-   - **What on hold means:** on hold is not a verdict that the proposal is wrong, and "do nothing" is not its default answer. For a real action, it means the action is not carried out until the rejecting unit's concerns are resolved. For a question with nothing to carry out, it means no conclusion: present each position side by side.
+   - **What on hold means:** on hold is not a verdict that the proposal is wrong, and "do nothing" is not its default answer. For a real action, it means the action is not carried out until the rejecting unit's concerns are resolved. If the default is itself harmful or hard to reverse, say with the resolution that leaving it on hold is also a choice, and by when it has to be made if that is known. For a question with nothing to carry out, it means no conclusion: present each position side by side.
 - **Unanimity check:** if all three units reached the same conclusion (all approve or all reject), suspect that they share the same blind spot because they come from the same model, check the following two points, and record the result. Record both points every time, writing "none found" for a point with nothing to report; this applies to follow-up proposals that were unanimous as well.
   1. **Shared premise:** do all three units' judgments rest on the same premise? Especially if it is an assumption filled in by the framing agent, state whether the resolution would flip if that premise were wrong.
   2. **Missing alternative:** by treating the proposal only as "do it or not", did the units miss options in between (a reduced version, phased adoption, a different method)? Compare with the framing agent's "options outside the binary", and reflect anything the units did not address in the next actions.
@@ -175,7 +177,8 @@ Use the format below as it is, with the headings in this order and none merged. 
 ```
 ## MAGI Deliberation Result
 
-**Proposal:** ... (main proposal)
+**Proposal:** ... (main proposal; what approve and reject each mean; if the request was asked in the negative, say so)
+**Default if not passed:** ... (what stays or happens; mark it if the default is itself harmful or hard to reverse)
 **Follow-up proposals:** (if any)
 **Grade:** normal / critical — (one-line reason; mark if raised by a grade objection)
 **Additional information:** (answers received from the user before deliberation; items left as assumptions without an answer; questions that were not asked, each with how its answer would change the outcome)
@@ -190,7 +193,7 @@ Use the format below as it is, with the headings in this order and none merged. 
 | BALTHASAR-2 | Reject | Medium | ... | ... |
 | CASPER-3 | Approve | Medium | ... | ... |
 
-**Resolution:** passed / rejected / on hold / error (approve n/3)
+**Resolution:** passed / rejected / on hold / error (approve n/3) — the outcome in plain words (what is done or not done), answering the question as the user asked it
 **Follow-up resolutions:** (if any) for each follow-up proposal, its resolution line and a per-unit table, so the user can see why each unit voted as it did:
 
 **Follow-up 1:** (follow-up text) — normal / critical — passed / rejected / on hold (approve n/3)
@@ -247,6 +250,7 @@ Without such a tool, skip the card: do not print its HTML or create a file for i
 Check the result once it is tallied and before any of it is shown, so the card, the Markdown and the JSON all come from the checked result. It matters most when one agent wrote everything, because nothing else checked the units. Repair a failed check by the rule that covers it: a unit that ran as a subagent is re-run, never edited (sections 1 and 4); what the moderator wrote itself, it rewrites.
 - **Questions:** the user was asked and answered, or framing found no question, or the user said to go ahead. Otherwise the questions that were not asked are listed under Additional information and each reading has its own proposal.
 - **Framing line:** says "framing agent" only if a separate agent framed the proposal.
+- **Direction:** approve is the change from the current state and the default is stated; for a request asked in the negative, the resolution says what it means for the question as asked.
 - **Facts:** every fact a unit cites is in the list of facts; no personal detail about the user appears that is not in the list.
 - **Cells:** every verdict is approve, reject, or error, and every confidence is high, medium, or low (in the output language). No placeholder from the format is left as written ("...", "Follow-up 1" with no text after it).
 - **Debate round (if held):** every unit, majority and minority, answered each opposing unit's strongest argument.
