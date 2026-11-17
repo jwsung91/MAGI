@@ -260,10 +260,23 @@ class ResultTests(unittest.TestCase):
             ("Add the database (asked as `hold off`)", "hold off", True),
             ("We don't add the database", "don't add", False),  # an apostrophe is not a quote
             ("CI에 린트 검사를 넣지 말자", "넣지 말", False),
+            ("Add MongoDB (Asked in the negative; rejected = yes, hold off.)", "hold off", True),
+            ("Add MongoDB (note: 'a)b' quoted) now", "now", False),  # a ")" in a quote does not end the note
         ]
         for agenda, pattern, passes in cases:
             with self.subTest(agenda=agenda):
                 self.assertEqual(check.meets("agenda_not_match", pattern, {"result": {"agenda": agenda}}), passes)
+
+    def test_moderator_framing_warns_only_with_subagents(self):
+        fx = fixture("framed", must={"mode": "deliberation"})
+        write_run(self.root, "framed", 1, result(framing="moderator directly"))
+        write_run(self.root, "framed", 2, result(framing="모더레이터 직접"))
+        write_run(self.root, "framed", 3, result(framing="framing agent"))
+        self.assertEqual(self.check(fx)["fixtures"]["framed"]["status"], "pass")  # no run.json: unknown
+        (self.root / "run.json").write_text(json.dumps({"command": ["claude", "--allowedTools", "Agent"]}))
+        out = self.check(fx)["fixtures"]["framed"]
+        self.assertEqual(out["status"], "warn")
+        self.assertEqual(sum("moderator directly" in n for n in out["notes"]), 2)
 
     def test_stopping_to_ask(self):
         ask = lambda fid: fixture(fid, must={"asks_questions": True}, interaction="ask")

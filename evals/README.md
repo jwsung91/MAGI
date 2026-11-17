@@ -12,6 +12,7 @@ Nothing here is part of the skill: `evals/` is not in any release zip, and chang
 | Resolution rules | fails the fixture | A resolution that does not follow from the votes: a critical proposal passed by 2/3, a normal proposal on hold, a unit error outvoted, `approve_count` that disagrees with the units, on hold with no debate record |
 | `expect.must` | fails the fixture unless every run meets it | Mode, grade or outcome on cases where only one answer is defensible |
 | `expect.should` | warning | Things that are likely but arguable; reported as a rate |
+| Framing | warning | A result framed by the moderator directly when the agent had subagents (the default command allows the Agent tool). `SKILL.md` allows that only when subagents are not available |
 | Pairs | fails the pair | The same decision asked in opposite directions reaching different outcomes |
 
 The verdict of a model is not deterministic, so each fixture is run several times (3 by default) and the report shows how the runs came out, not just pass or fail.
@@ -54,7 +55,7 @@ Checks available under `must` and `should`:
 | `verdict` | list of resolutions | the resolution is one of them (use `outcome` unless the difference between rejected and on hold matters) |
 | `split` | `true` / `false` | the three units did (not) vote on both sides |
 | `follow_ups_min` | 0–2 | at least that many follow-up proposals |
-| `agenda_match`, `agenda_not_match`, `preset_match` | regex, case-insensitive | the text does (not) match. For the agenda, quoted text (`'…'`, `"…"`, `“…”`, `「…」`, backticks) is left out first, so a note that cites the original question does not count as the proposal |
+| `agenda_match`, `agenda_not_match`, `preset_match` | regex, case-insensitive | the text does (not) match. For the agenda, quoted text (`'…'`, `"…"`, `“…”`, `「…」`, backticks) and parenthetical notes (`(…)`) are left out first, so a note that cites the original question or spells out what the vote means does not count as the proposal |
 | `asks_questions` | `true` | the run stopped to ask: no result file, and the progress log shows a framing with questions and no `final` event. Needs `interaction: "ask"` and cannot be combined with other checks |
 
 The current set:

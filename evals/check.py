@@ -52,15 +52,21 @@ OUTCOME = {"passed": "change", "rejected": "no_change", "on_hold": "no_change"}
 
 ID_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
-# Quoted text in an agenda, such as a note that cites the original question
-# ("원 질문은 '넣지 말까?'"), is not the proposal itself. A single quote counts
-# only when it is not inside a word, so "don't" is not taken for a quote.
+# Quoted text and parenthetical notes in an agenda are not the proposal
+# itself: runs add notes that cite the original question ("원 질문은 '넣지
+# 말까?'") or spell out what the vote means ("(rejected = yes, hold off)").
+# A single quote counts only when it is not inside a word, so "don't" is not
+# taken for a quote. Quotes go first, so a ")" inside a quote does not end a note.
 QUOTED_RE = re.compile(r"""(?<!\w)'[^']*'(?!\w)|"[^"]*"|‘[^’]*’|“[^”]*”|「[^」]*」|『[^』]*』|`[^`]*`""")
+PAREN_RE = re.compile(r"\([^()]*\)|（[^（）]*）")
+
+# Words a result uses in "framing" when the moderator framed the proposal itself.
+MODERATOR_FRAMING_RE = re.compile(r"moderator|모더레이터", re.I)
 
 
 def agenda_text(result: dict) -> str:
-    """The agenda without quoted text, for the agenda_match checks."""
-    return QUOTED_RE.sub(" ", str(result.get("agenda", "")))
+    """The agenda without quoted text or parenthetical notes, for the agenda_match checks."""
+    return PAREN_RE.sub(" ", QUOTED_RE.sub(" ", str(result.get("agenda", ""))))
 FIXTURE_KEYS = {"id", "category", "pair", "lang", "interaction", "request", "facts", "expect", "note"}
 LANGS = ("en", "ko")
 # go_ahead: the prompt tells the skill to proceed on assumptions (the default).
@@ -337,9 +343,11 @@ def read_log(path: Path):
     return asked, finished
 
 
-def read_run(run_dir: Path, schema: dict) -> dict:
+def read_run(run_dir: Path, schema: dict, subagents: bool = False) -> dict:
     """One execution of one fixture: its result (if any), what is wrong with
-    it, and whether the run stopped to ask the user."""
+    it, and whether the run stopped to ask the user. With subagents=True, a
+    result framed by the moderator directly is a warning: SKILL.md allows that
+    only when subagents are not available."""
     run = {"name": run_dir.name, "result": None, "problems": [], "warnings": [], "stopped_to_ask": None}
     result_dir = run_dir / "result"
     results = sorted(result_dir.glob("*.json")) if result_dir.is_dir() else []
@@ -379,6 +387,8 @@ def read_run(run_dir: Path, schema: dict) -> dict:
     problems, warnings = check_rules(result)
     run["problems"].extend(problems)
     run["warnings"].extend(warnings)
+    if subagents and MODERATOR_FRAMING_RE.search(str(result.get("framing", ""))):
+        run["warnings"].append("framed by the moderator directly although subagents were available")
     return run
 
 
@@ -493,19 +503,22 @@ def evaluate_pairs(fixtures: dict, evaluated: dict) -> dict:
 
 def check_results(run_dir: Path, fixtures: dict) -> dict:
     schema = json.loads(RESULT_SCHEMA.read_text(encoding="utf-8"))
-    evaluated = {}
-    for fid, fx in fixtures.items():
-        fixture_dir = run_dir / fid
-        run_dirs = sorted(p for p in fixture_dir.glob("run-*") if p.is_dir()) if fixture_dir.is_dir() else []
-        evaluated[fid] = evaluate_fixture(fx, [read_run(p, schema) for p in run_dirs])
-    pairs = evaluate_pairs(fixtures, evaluated)
-
     meta = {}
     if (run_dir / "run.json").exists():
         try:
             meta = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             pass
+    # The default command allows the Agent tool, so the skill had subagents.
+    # For another agent this is not known, and the framing check is skipped.
+    subagents = "Agent" in (meta.get("command") or [])
+
+    evaluated = {}
+    for fid, fx in fixtures.items():
+        fixture_dir = run_dir / fid
+        run_dirs = sorted(p for p in fixture_dir.glob("run-*") if p.is_dir()) if fixture_dir.is_dir() else []
+        evaluated[fid] = evaluate_fixture(fx, [read_run(p, schema, subagents) for p in run_dirs])
+    pairs = evaluate_pairs(fixtures, evaluated)
     totals = Counter(e["status"] for e in evaluated.values())
     return {
         "run": meta.get("name", run_dir.name),
