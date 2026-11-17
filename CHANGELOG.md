@@ -7,6 +7,7 @@ The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versi
 - Framing by the moderator directly (no subagents) still asks the user questions before deliberating, with the same rounds and re-framing. Found in a ChatGPT run, where the moderator resolved what "release" meant from its own research instead of asking.
 - Output format: every heading of the result format is required, in order; anything the moderator adds (an action plan, extra tables) goes after it under its own heading.
 - Unanimity check: both points (shared premise, missing alternative) are recorded every time, "none found" when empty, including for unanimous follow-up proposals.
+- Releases now also include `magi-chat-<version>.zip`, the skill without `scripts/`, for the Gemini app, which refuses skills that contain executable files.
 - The result JSON format is unchanged (version 2).
 
 ## [1.3.1]
