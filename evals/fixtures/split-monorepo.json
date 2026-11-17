@@ -1,0 +1,19 @@
+{
+  "id": "split-monorepo",
+  "category": "split",
+  "lang": "en",
+  "request": "Should we move our five services into one monorepo?",
+  "facts": [
+    "A change to the shared library needs five coordinated pull requests today; this happened nine times last quarter.",
+    "Once last quarter, a service was built against an outdated version of the shared library because one of the five pull requests was merged late; it was rolled back within 20 minutes and no customer data was affected.",
+    "Two of the five services belong to another team, which has said it prefers separate repositories but would go along with a monorepo if asked.",
+    "One engineer has set up path-based CI triggers at a previous job and estimates about a week for it here; until then every commit builds all five services (about 25 minutes, against about 6 minutes per repository now).",
+    "The migration is estimated at two weeks, during which feature work slows down. Splitting the repositories again later is possible but loses the merged history.",
+    "The services are deployed independently and that would not change."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "split": true }
+  },
+  "note": "A balanced trade-off: the three perspectives should not all land on the same side, and unanimous runs may mean the units are converging. Earlier versions of these facts leaned one way and were unanimous both times (other team opposing and nobody with CI experience: rejected 0/3; team owns everything, CI expert, two rollbacks: passed 3/3), which says more about the facts than the units. The cause of the incident is stated so that the units do not all hang on the same open question."
+}

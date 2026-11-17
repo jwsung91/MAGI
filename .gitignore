@@ -1,0 +1,3 @@
+__pycache__/
+# Eval runs (results, logs, agent output). Baselines kept on purpose go in evals/baseline/.
+evals/out/

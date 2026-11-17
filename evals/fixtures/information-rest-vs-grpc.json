@@ -1,0 +1,15 @@
+{
+  "id": "information-rest-vs-grpc",
+  "category": "information",
+  "lang": "en",
+  "request": "What are the trade-offs between REST and gRPC for calls between our internal services?",
+  "facts": [
+    "There are six internal services, all written in Go.",
+    "They call each other over REST with JSON today.",
+    "No decision to change is on the table; the team wants to understand the trade-offs."
+  ],
+  "expect": {
+    "must": { "mode": "information" }
+  },
+  "note": "An open comparison cannot be answered with approve or reject without changing its meaning: information mode, no vote."
+}

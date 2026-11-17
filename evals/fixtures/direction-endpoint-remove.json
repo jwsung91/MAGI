@@ -1,0 +1,18 @@
+{
+  "id": "direction-endpoint-remove",
+  "category": "direction",
+  "pair": "direction-endpoint",
+  "lang": "en",
+  "request": "Should we remove the v1 export endpoint?",
+  "facts": [
+    "The v1 export endpoint was marked deprecated 14 months ago; v2 has replaced it.",
+    "Access logs show zero requests to v1 in the last 180 days.",
+    "Every known client has confirmed in writing that it moved to v2.",
+    "The v1 code is the only user of a library with a known, unpatched vulnerability.",
+    "The removal is one pull request, and reverting that pull request restores the endpoint."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "change" }
+  },
+  "note": "Affirmative half of a pair where the change is a removal. The default (keeping the endpoint) is itself harmful, so either grade is defensible; the removal should pass under both."
+}

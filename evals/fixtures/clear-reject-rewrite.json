@@ -1,0 +1,17 @@
+{
+  "id": "clear-reject-rewrite",
+  "category": "clear",
+  "lang": "en",
+  "request": "Should we rewrite our billing service in Rust this quarter?",
+  "facts": [
+    "The billing service is 40,000 lines of Python and has run in production for three years.",
+    "Its p99 latency is 80 ms against a 500 ms target; there is no open performance complaint.",
+    "None of the three engineers on the team has shipped Rust to production.",
+    "The quarter's roadmap already holds two deliverables promised to customers.",
+    "No customer or internal team has asked for the rewrite."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "no_change" }
+  },
+  "note": "Sanity case: a large cost with no stated need should not pass."
+}

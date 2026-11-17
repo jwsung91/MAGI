@@ -1,0 +1,24 @@
+name: Eval tools
+
+# Checks the eval fixtures and the scripts that read eval results. It does not
+# run the evals themselves: a real run needs a logged-in agent and uses quota,
+# so it is done locally before a release (see evals/README.md).
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate fixtures
+        run: python3 evals/check.py fixtures
+
+      - name: Test the eval tools
+        run: python3 -m unittest discover -s evals/tests -v

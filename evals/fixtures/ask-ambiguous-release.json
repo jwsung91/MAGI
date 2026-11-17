@@ -1,0 +1,18 @@
+{
+  "id": "ask-ambiguous-release",
+  "category": "questions",
+  "lang": "en",
+  "interaction": "ask",
+  "request": "Should we release the library now?",
+  "facts": [
+    "The version in the manifest is 0.9.3.",
+    "Two people outside the team use the library from a git checkout.",
+    "The library is not published to any package registry.",
+    "The README says nothing about API stability.",
+    "No open bug is marked as blocking."
+  ],
+  "expect": {
+    "must": { "asks_questions": true }
+  },
+  "note": "'Release' can mean publishing 0.9.3 to a registry or declaring a stable 1.0. The readings lead to different proposals, so the skill must ask and end the turn: no result file is written. Verified from the progress log (framing_done with questions, no final event)."
+}

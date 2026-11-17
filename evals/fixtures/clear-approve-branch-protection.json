@@ -1,0 +1,18 @@
+{
+  "id": "clear-approve-branch-protection",
+  "category": "clear",
+  "lang": "en",
+  "request": "Should we turn on branch protection on main that requires one approving review?",
+  "facts": [
+    "The team has four engineers.",
+    "Two incidents last quarter came from unreviewed commits pushed straight to main.",
+    "About 90% of changes already go through a pull request with a review, by habit.",
+    "The setting is a toggle in the repository settings and can be turned off in a minute.",
+    "Repository admins can bypass the rule in an emergency."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "change" },
+    "should": { "grade": "normal" }
+  },
+  "note": "Sanity case: reversible, cheap, addresses a recorded problem."
+}
