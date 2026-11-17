@@ -2,6 +2,14 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.5.0]
+
+- Proposal direction: approve is always the action that changes the current state. A request asked in the negative ("should we not add X?") is framed in its affirmative form, so the same votes no longer give a different result depending on how the question was worded. Removing something that exists is a different decision from not adding it.
+- The framing names the default (what stays or happens if the proposal does not pass) and marks it when the default is itself harmful or hard to reverse; either side can make a proposal critical. The units receive the default with the proposal.
+- Output format: a "Default if not passed" line; the resolution line says the outcome in plain words, answering the question as the user asked it. On hold with a harmful default says that leaving it on hold is also a choice.
+- Self-check: direction.
+- Resolution rules are unchanged. The result JSON format is unchanged (version 2).
+
 ## [1.4.0]
 
 Fixes from test runs in ChatGPT and the Gemini app with 1.3.2, where one agent writes everything and no subagents exist.
