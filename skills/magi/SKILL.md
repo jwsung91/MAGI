@@ -21,6 +21,16 @@ This skill follows the open Agent Skills format and runs in any agent that loads
 
 Why framing is separated from the moderator: how the proposal is worded and which premises go into it affect the outcome more than anything else. If the party that summarizes the result also writes the proposal, judgment is concentrated in one place.
 
+## Flow
+
+1. Gather facts (moderator, section 1).
+2. Frame the proposal (framing agent, or the moderator directly).
+3. **Ask the user, then stop.** If framing produced questions for the user, ask them all at once and end the turn there: do not deliberate in the same turn, and do not answer the questions yourself. This is the one point where the skill waits for the user, and it holds in every host, including hosts that usually proceed on reasonable assumptions. A request that can be read in more than one way, where the readings lead to different proposals (for example, "release" as declaring a stable 1.0 or as opening the current version to users), is a question for the user, not an assumption. Skip this step only when framing found no such question, or the user said to go ahead without questions.
+4. Review by the three units (section 3).
+5. Resolve (section 4).
+6. Report in the output format (section 5). Nothing comes before the format except one short line and the result card, if one is drawn: no summary table and no verdict of the moderator's own.
+7. Run the self-check (before finishing, section 5).
+
 ## 1. Framing the proposal
 
 ### Moderator: gathering material
@@ -39,6 +49,8 @@ Subagents may be able to see context the moderator did not hand them (the user's
 > Use only the material in this prompt. Do not use the user's memory, earlier conversation, or any other context, even if you can see it. If information you need is missing, write it as an unconfirmed premise instead of filling it in.
 
 If a subagent's output still relies on a fact that is not in its input, treat it as a format break: re-run that subagent once with the instruction restated. Do not silently edit its rationale; the output is shown as it is.
+
+Without subagents, the moderator writes the framing and the units itself and can see everything, so the same rule binds the moderator in those roles: framing and units use only the original request and the list of facts. A personal detail about the user (role, career, family, other projects) enters the deliberation only as an item in the list of facts, and only when it bears on the proposal. A unit's rationale never cites a detail that is not in the list.
 
 ### Framing agent
 
@@ -62,7 +74,7 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 - If the user does not answer or says "just go ahead", leave those variables as [assumption] and proceed, stating so in the result.
 - If the framing agent asks for something to be checked from sources, the moderator checks it and adds it to the list of facts.
 - The moderator **does not rewrite** the framing result. If a part clearly contradicts what the user said, point out only that contradiction and run the framing agent once more.
-- If subagents are not available, the moderator frames the proposal directly and states "Framing: moderator directly" in the output. Framing directly still produces all seven items above, including questions for the user: ask them and wait for the answers before deliberating, with the same rounds and re-framing. Facts the moderator found while gathering material do not replace the user's answer to what the request means (for example, which of two readings of "release" the user intends).
+- If subagents are not available, the moderator frames the proposal directly and states "Framing: moderator directly" in the output. Write "framing agent" only when a separate agent actually produced the framing; if the moderator wrote it, in whatever role, it is "moderator directly". Framing directly still produces all seven items above, including questions for the user: ask them and wait for the answers before deliberating, with the same rounds and re-framing. Facts the moderator found while gathering material do not replace the user's answer to what the request means (for example, which of two readings of "release" the user intends).
 
 ## 2. Grade
 
@@ -79,7 +91,7 @@ A thought experiment or discussion question, where nothing will actually be carr
 
 Independence is the core.
 - If subagents can be launched, run the three units as **separate agents** that cannot see each other's results.
-- If not, write one unit at a time, without referring to or aligning with earlier units' conclusions.
+- If not, write one unit at a time, without referring to or aligning with earlier units' conclusions, and say in the result's closing limitation line that one agent wrote all three units in turn. Do not call such units independent agents.
 - Pass the framing result (proposal, premises, preset perspectives, options outside the binary) to the three units unchanged. If there are follow-up proposals, each unit gives a separate verdict on the main proposal and on each follow-up.
 - Each unit prompt includes the input isolation instruction (section 1).
 
@@ -177,15 +189,15 @@ Use the format below as it is: every heading in this order, none dropped or merg
 | CASPER-3 | Approve | Medium | ... | ... |
 
 **Resolution:** passed / rejected / on hold / error (approve n/3)
-**Follow-up resolutions:** (if any) for each follow-up proposal, its resolution and a per-unit table, so the user can see why each unit voted as it did:
+**Follow-up resolutions:** (if any) for each follow-up proposal, its resolution line and a per-unit table, so the user can see why each unit voted as it did:
 
-| Follow-up n | Verdict | Confidence | Key rationale |
+**Follow-up 1:** (follow-up text) — passed / rejected / on hold (approve n/3)
+
+| Unit | Verdict | Confidence | Key rationale |
 |---|---|---|---|
-| MELCHIOR-1 | ... | ... | ... (1-2 points) |
-| BALTHASAR-2 | ... | ... | ... |
-| CASPER-3 | ... | ... | ... |
-
-Then **Resolution:** passed / rejected / on hold (approve n/3).
+| MELCHIOR-1 | Approve | ... | ... (1-2 points) |
+| BALTHASAR-2 | Reject | ... | ... |
+| CASPER-3 | Approve | ... | ... |
 **Recommendations:** (if any, per unit; non-binding. If units recommend modified versions of the proposal, list them as candidates for a separate decision without merging them)
 **Debate round:** (if held) for each unit: its round-2 verdict; its answer to each opposing unit's strongest argument (rebutted / conceded, one line); if it changed position, the argument it cited (source unit, quote) and whether the moderator's check accepted the change, with the reason if not. If no one changed, say so.
 
@@ -232,6 +244,15 @@ Check each output in this order before ending the reply:
 1. The result card, if a tool that renders inline visuals is available.
 2. The Markdown result, complete even when a card was drawn.
 3. The JSON result and the `final` progress event, if `MAGI_RESULTS_DIR` is set (sections 6 and 7).
+
+Then run this self-check on the Markdown result, and fix anything that fails before sending. It matters most when one agent wrote everything, because nothing else checked the units.
+- **Questions:** the user was asked before deliberation and answered, or framing found no question, or the user said to go ahead.
+- **Framing line:** says "framing agent" only if a separate agent framed the proposal.
+- **Facts:** every fact a unit cites is in the list of facts; no personal detail about the user appears that is not in the list.
+- **Cells:** every verdict cell is approve, reject, or error, and every confidence cell is high, medium, or low (in the output language). No placeholder from the format is left as written ("...", "Follow-up 1" with no text after it).
+- **Debate round (if held):** every unit, majority and minority, answered each opposing unit's strongest argument.
+- **Unanimity check (if any proposal was unanimous):** both points are recorded.
+- **Language:** headings, labels, and verdict words are in the output language; only the unit names stay in English.
 
 ## Output language
 

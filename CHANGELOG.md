@@ -2,6 +2,17 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.4.0]
+
+Fixes from test runs in ChatGPT and the Gemini app with 1.3.2, where one agent writes everything and no subagents exist.
+
+- New "Flow" section at the top. Step 3 makes asking the user a hard stop: questions end the turn, the moderator does not answer them itself, and an ambiguous request whose readings lead to different proposals is a question, not an assumption. Both hosts had skipped the questions and filled in what the request meant.
+- Input isolation also binds the moderator when it writes the framing and the units itself: a personal detail about the user enters only through the list of facts. A Gemini run had units cite the user's job and career from outside the material.
+- The framing line says "framing agent" only when a separate agent framed the proposal; units written in turn by one agent are not called independent agents, and the closing limitation line says so.
+- Follow-up resolution format: the stray "Then **Resolution:**" template line is replaced by a "Follow-up 1: … — resolution" line above each table. A run had copied the template text and put a confidence value in a verdict cell.
+- Self-check before finishing: questions, framing line, facts, cell values, debate answers from every unit, both unanimity points, translated headings.
+- The result JSON format is unchanged (version 2).
+
 ## [1.3.2]
 
 - Framing by the moderator directly (no subagents) still asks the user questions before deliberating, with the same rounds and re-framing. Found in a ChatGPT run, where the moderator resolved what "release" meant from its own research instead of asking.
