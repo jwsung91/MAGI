@@ -1,0 +1,19 @@
+{
+  "id": "direction-lint-en-add",
+  "category": "direction",
+  "pair": "direction-lint-en",
+  "lang": "en",
+  "request": "Should we add a lint check to CI?",
+  "facts": [
+    "The team repository's CI runs only the build and the tests today.",
+    "The lint check to be added only prints warnings and never fails the build.",
+    "It adds about 20 seconds to a CI run (about 6 minutes now).",
+    "About 30% of code review comments in the last three months were style remarks a linter could catch.",
+    "The change adds one configuration file, and deleting that file restores the current state."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "change" },
+    "should": { "grade": "normal" }
+  },
+  "note": "Affirmative half of a pair. English twin of direction-lint-add, same facts translated, so the two languages can be compared. It should pass."
+}

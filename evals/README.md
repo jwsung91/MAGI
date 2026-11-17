@@ -62,7 +62,7 @@ The current set:
 
 | Category | Fixtures | Question |
 |---|---|---|
-| `direction` | 3 pairs | Does the wording of the request (add / not add, remove / keep) change the outcome? |
+| `direction` | 4 pairs | Does the wording of the request (add / not add, remove / keep) change the outcome? The lint pair is asked in Korean (`direction-lint`) and in English (`direction-lint-en`) with the same facts, so the language can be compared too |
 | `clear` | 2 approve, 2 reject | Does a case with one defensible answer get that answer? |
 | `grade` | 2 | Is an irreversible action critical, and a thought experiment normal? |
 | `information` | 1 | Does an open question stay a question instead of a vote? |
