@@ -82,6 +82,10 @@ codex plugin add magi@jwsung91
 
 Download `magi-plugin-<version>.zip` from the [latest release](https://github.com/jwsung91/MAGI/releases/latest) and upload it where ChatGPT accepts plugin ZIPs. The archive has `.codex-plugin/plugin.json` and `skills/magi/` at its root. ChatGPT has no subagents in a chat, so the units are written one at a time and the result says "Framing: moderator directly".
 
+**Gemini app (skill upload)**
+
+The Gemini app refuses skills that contain executable files, so upload `magi-chat-<version>.zip` from the [latest release](https://github.com/jwsung91/MAGI/releases/latest): the same skill without `scripts/` (the optional progress-log helper, which a chat app cannot run anyway). The units are written one at a time and the result says "Framing: moderator directly".
+
 **Gemini CLI (extension)**
 
 ```bash
