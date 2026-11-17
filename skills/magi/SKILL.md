@@ -21,6 +21,16 @@ This skill follows the open Agent Skills format and runs in any agent that loads
 
 Why framing is separated from the moderator: how the proposal is worded and which premises go into it affect the outcome more than anything else. If the party that summarizes the result also writes the proposal, judgment is concentrated in one place.
 
+## Flow
+
+1. Gather facts (moderator, section 1).
+2. Frame the proposal (framing agent, or the moderator directly).
+3. **Ask the user, then stop.** If framing produced questions for the user, ask them all at once and end the turn; deliberate only after the answers (section 1, handling the result). This is the one point where the skill waits for the user.
+4. Review by the three units (section 3).
+5. Resolve (section 4).
+6. Run the self-check on the tallied result, before anything is shown (section 5).
+7. Report: one short line, the result card if one is drawn, then the output format (section 5). No summary table and no verdict of the moderator's own comes before the format.
+
 ## 1. Framing the proposal
 
 ### Moderator: gathering material
@@ -40,6 +50,8 @@ Subagents may be able to see context the moderator did not hand them (the user's
 
 If a subagent's output still relies on a fact that is not in its input, treat it as a format break: re-run that subagent once with the instruction restated. Do not silently edit its rationale; the output is shown as it is.
 
+Without subagents, the moderator writes the framing and the units itself and can see everything, so the same rule binds the moderator in those roles: framing and units use only the original request and the list of facts. A personal detail about the user (role, career, family, other projects) enters the deliberation only as an item in the list of facts, and only when it bears on the proposal. A unit's rationale never cites a detail that is not in the list.
+
 ### Framing agent
 
 Takes the original request, the list of facts, and (if any) the user-specified preset, and produces the following.
@@ -48,7 +60,7 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 2. **Proposal:** one sentence that can be answered with approve or reject. State what approve and what reject each mean, without overlap.
    - **One action per proposal.** Do not bundle actions that can be decided separately (e.g. buying a new device and selling the old one; whether to take time off and how to take it). Make the most essential action the **main proposal** and split the rest into **follow-up proposals** (at most 2).
    - **Use the targets the user specified as they are.** Do not widen a model, date, or option the user named into a "family" or "similar items". Alternatives are listed by name only under item 6 (options outside the binary).
-3. **Grade:** normal / critical, with a one-line reason (section 2).
+3. **Grade:** normal / critical, with a one-line reason (section 2). Grade each follow-up proposal separately; it need not match the main proposal's grade.
 4. **Premises:** split into confirmed facts / assumptions / unconfirmed. Assumptions are what the framing agent filled in, and must be marked as assumptions. Write important variables that were not given as unconfirmed. Variables that could decide the outcome and that only the user can answer must not be filled in as [assumption]; send them to item 7, questions for the user.
 5. **Preset:** the chosen preset, a one-line reason, and one runner-up. If the user specified one, follow it. If no preset fits, design three new perspectives (section 3).
 6. **Options outside the binary:** options that were dropped by turning the proposal into approve/reject (a reduced version, phased adoption, a different method, a change of timing).
@@ -56,13 +68,15 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 
 ### Moderator: handling the result
 
-- If there are questions for the user, ask them **all at once** before deliberation (with a question tool if available). Add the answers to the list of facts and run the framing agent again. Do not proceed on assumptions while things remain ambiguous.
+- If there are questions for the user, ask them **all at once** (with a question tool if available) and end the turn there. Do not deliberate in the same turn, and do not answer the questions yourself. This holds in every host, including hosts that usually proceed on reasonable assumptions. Add the answers to the list of facts and run the framing agent again.
+- **What the request means is the user's to answer.** If the request can be read in more than one way and the readings lead to different proposals (for example, "release" as declaring a stable 1.0 or as opening the current version to users), that is a question for the user, not an assumption. Facts the moderator found while gathering material do not settle it.
 - **Every round of answers is followed by re-framing.** Do not append answers to the previous framing result and pass it to the units directly; the units always receive a framing result produced after the latest answers.
 - If the re-framed result has new questions for the user, ask them again in the same way. A precise result is worth another round. Stop after 3 rounds of questions; anything still open after that stays as [assumption] and is stated in the result.
 - If the user does not answer or says "just go ahead", leave those variables as [assumption] and proceed, stating so in the result.
+- **If deliberation happens without the user having been asked** (an unattended run, or a host that does not hand the turn back), do not settle an ambiguity silently. Make the reading closest to the user's words the main proposal and each other reading a follow-up proposal, deliberate each, and list the questions that were not asked under **Additional information**, each with how its answer would change the outcome, so the user can answer and run MAGI again. This is a fallback, not an alternative: wherever the turn can end, end it.
 - If the framing agent asks for something to be checked from sources, the moderator checks it and adds it to the list of facts.
 - The moderator **does not rewrite** the framing result. If a part clearly contradicts what the user said, point out only that contradiction and run the framing agent once more.
-- If subagents are not available, the moderator frames the proposal directly and states "Framing: moderator directly" in the output. Framing directly still produces all seven items above, including questions for the user: ask them and wait for the answers before deliberating, with the same rounds and re-framing. Facts the moderator found while gathering material do not replace the user's answer to what the request means (for example, which of two readings of "release" the user intends).
+- If subagents are not available, the moderator frames the proposal directly and states "Framing: moderator directly" in the output. Write "framing agent" only when a separate agent actually produced the framing. Framing directly still produces all seven items above, questions for the user included, and every rule in this list applies unchanged.
 
 ## 2. Grade
 
@@ -79,7 +93,7 @@ A thought experiment or discussion question, where nothing will actually be carr
 
 Independence is the core.
 - If subagents can be launched, run the three units as **separate agents** that cannot see each other's results.
-- If not, write one unit at a time, without referring to or aligning with earlier units' conclusions.
+- If not, write one unit at a time, without referring to or aligning with earlier units' conclusions, and say on the result's **Limitations** line (section 5) that one agent wrote all three units in turn. Do not call such units independent agents.
 - Pass the framing result (proposal, premises, preset perspectives, options outside the binary) to the three units unchanged. If there are follow-up proposals, each unit gives a separate verdict on the main proposal and on each follow-up.
 - Each unit prompt includes the input isolation instruction (section 1).
 
@@ -156,7 +170,7 @@ Decide in this order.
 
 ## 5. Output format
 
-Use the format below as it is: every heading in this order, none dropped or merged. Anything beyond it (an action plan, extra tables, research notes) goes after the format, under its own heading, so the user can tell the deliberation result from the moderator's additions.
+Use the format below as it is, with the headings in this order and none merged. A heading marked "(if any)", "(if held)" or "(if applicable)" is left out when it does not apply; every other heading is required. Anything beyond it (an action plan, extra tables, research notes) goes after the format, under its own heading, so the user can tell the deliberation result from the moderator's additions.
 
 ```
 ## MAGI Deliberation Result
@@ -164,10 +178,10 @@ Use the format below as it is: every heading in this order, none dropped or merg
 **Proposal:** ... (main proposal)
 **Follow-up proposals:** (if any)
 **Grade:** normal / critical — (one-line reason; mark if raised by a grade objection)
-**Additional information:** (answers received from the user before deliberation; items left as assumptions without an answer)
+**Additional information:** (answers received from the user before deliberation; items left as assumptions without an answer; questions that were not asked, each with how its answer would change the outcome)
 **Preset:** default / ethics / code review / personal decision / original / custom — (one-line reason, runner-up)
 **Premises:** confirmed facts / assumptions / unconfirmed (mark assumptions)
-**Options outside the binary:** (found by the framing agent)
+**Options outside the binary:** (from the framing)
 **Framing:** framing agent / moderator directly
 
 | Unit | Verdict | Confidence | Key rationale | Doubted premise |
@@ -177,15 +191,16 @@ Use the format below as it is: every heading in this order, none dropped or merg
 | CASPER-3 | Approve | Medium | ... | ... |
 
 **Resolution:** passed / rejected / on hold / error (approve n/3)
-**Follow-up resolutions:** (if any) for each follow-up proposal, its resolution and a per-unit table, so the user can see why each unit voted as it did:
+**Follow-up resolutions:** (if any) for each follow-up proposal, its resolution line and a per-unit table, so the user can see why each unit voted as it did:
 
-| Follow-up n | Verdict | Confidence | Key rationale |
+**Follow-up 1:** (follow-up text) — normal / critical — passed / rejected / on hold (approve n/3)
+
+| Unit | Verdict | Confidence | Key rationale |
 |---|---|---|---|
-| MELCHIOR-1 | ... | ... | ... (1-2 points) |
-| BALTHASAR-2 | ... | ... | ... |
-| CASPER-3 | ... | ... | ... |
+| MELCHIOR-1 | Approve | ... | ... (1-2 points) |
+| BALTHASAR-2 | Reject | ... | ... |
+| CASPER-3 | Approve | ... | ... |
 
-Then **Resolution:** passed / rejected / on hold (approve n/3).
 **Recommendations:** (if any, per unit; non-binding. If units recommend modified versions of the proposal, list them as candidates for a separate decision without merging them)
 **Debate round:** (if held) for each unit: its round-2 verdict; its answer to each opposing unit's strongest argument (rebutted / conceded, one line); if it changed position, the argument it cited (source unit, quote) and whether the moderator's check accepted the change, with the reason if not. If no one changed, say so.
 
@@ -195,6 +210,7 @@ Then **Resolution:** passed / rejected / on hold (approve n/3).
 
 **What would flip the resolution:** ...
 **Next actions:** ...
+**Limitations:** how the units were run (separate agents of one model / one agent writing each unit in turn); for an important proposal, also a recommendation to get a review from other sources, other people, or another model.
 ```
 
 In information mode, use this format instead of a resolution.
@@ -225,6 +241,18 @@ Implementation rules (hosts pre-style form controls, which can silently erase co
 - Show selection by changing the tile's own border color (keep a 2px transparent border at rest so the layout does not shift), not with `outline`.
 
 Without such a tool, skip the card: do not print its HTML or create a file for it. Also skip it when the user asks for no card. The Markdown result is always complete on its own.
+
+### Self-check (before reporting)
+
+Check the result once it is tallied and before any of it is shown, so the card, the Markdown and the JSON all come from the checked result. It matters most when one agent wrote everything, because nothing else checked the units. Repair a failed check by the rule that covers it: a unit that ran as a subagent is re-run, never edited (sections 1 and 4); what the moderator wrote itself, it rewrites.
+- **Questions:** the user was asked and answered, or framing found no question, or the user said to go ahead. Otherwise the questions that were not asked are listed under Additional information and each reading has its own proposal.
+- **Framing line:** says "framing agent" only if a separate agent framed the proposal.
+- **Facts:** every fact a unit cites is in the list of facts; no personal detail about the user appears that is not in the list.
+- **Cells:** every verdict is approve, reject, or error, and every confidence is high, medium, or low (in the output language). No placeholder from the format is left as written ("...", "Follow-up 1" with no text after it).
+- **Debate round (if held):** every unit, majority and minority, answered each opposing unit's strongest argument.
+- **Unanimity check (if any proposal was unanimous):** both points are recorded.
+- **Limitations line:** says how the units were actually run.
+- **Language:** headings, labels, and verdict words are in the output language; only the unit names stay in English.
 
 ### Before finishing
 
@@ -304,6 +332,6 @@ Where the agent can run shell commands and `MAGI_RESULTS_DIR` is set, also recor
 
 ## On limitations
 
-If the three units come from the same model, this is not true design diversity. Just as the original MAGI came from one person's personality, common-mode failure remains. For important proposals, add one line at the end of the result recommending a review from other sources, other people, or another model as well.
+If the three units come from the same model, this is not true design diversity. Just as the original MAGI came from one person's personality, common-mode failure remains. The **Limitations** line of the result says how the units were run, and for important proposals recommends a review from other sources, other people, or another model as well.
 
 Separating the framing agent does not change the fact that it is the same model. The point of judgment moves from the moderator to an independent agent; it does not disappear. The framing result is shown in the output as is so that the user can review this point directly.
