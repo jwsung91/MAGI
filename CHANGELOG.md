@@ -2,6 +2,13 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.3.2]
+
+- Framing by the moderator directly (no subagents) still asks the user questions before deliberating, with the same rounds and re-framing. Found in a ChatGPT run, where the moderator resolved what "release" meant from its own research instead of asking.
+- Output format: every heading of the result format is required, in order; anything the moderator adds (an action plan, extra tables) goes after it under its own heading.
+- Unanimity check: both points (shared premise, missing alternative) are recorded every time, "none found" when empty, including for unanimous follow-up proposals.
+- The result JSON format is unchanged (version 2).
+
 ## [1.3.1]
 
 - No changes to the skill.

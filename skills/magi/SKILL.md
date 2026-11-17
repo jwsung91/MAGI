@@ -62,7 +62,7 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 - If the user does not answer or says "just go ahead", leave those variables as [assumption] and proceed, stating so in the result.
 - If the framing agent asks for something to be checked from sources, the moderator checks it and adds it to the list of facts.
 - The moderator **does not rewrite** the framing result. If a part clearly contradicts what the user said, point out only that contradiction and run the framing agent once more.
-- If subagents are not available, the moderator frames the proposal directly and states "Framing: moderator directly" in the output.
+- If subagents are not available, the moderator frames the proposal directly and states "Framing: moderator directly" in the output. Framing directly still produces all seven items above, including questions for the user: ask them and wait for the answers before deliberating, with the same rounds and re-framing. Facts the moderator found while gathering material do not replace the user's answer to what the request means (for example, which of two readings of "release" the user intends).
 
 ## 2. Grade
 
@@ -150,11 +150,13 @@ Decide in this order.
    - A unit that keeps its position needs no check, but its rebuttals and concessions are recorded.
    - If the revote is still split, the result is **on hold** (until the rejecting unit's concerns are resolved).
    - **What on hold means:** on hold is not a verdict that the proposal is wrong, and "do nothing" is not its default answer. For a real action, it means the action is not carried out until the rejecting unit's concerns are resolved. For a question with nothing to carry out, it means no conclusion: present each position side by side.
-- **Unanimity check:** if all three units reached the same conclusion (all approve or all reject), suspect that they share the same blind spot because they come from the same model, check the following two points, and record the result.
+- **Unanimity check:** if all three units reached the same conclusion (all approve or all reject), suspect that they share the same blind spot because they come from the same model, check the following two points, and record the result. Record both points every time, writing "none found" for a point with nothing to report; this applies to follow-up proposals that were unanimous as well.
   1. **Shared premise:** do all three units' judgments rest on the same premise? Especially if it is an assumption filled in by the framing agent, state whether the resolution would flip if that premise were wrong.
   2. **Missing alternative:** by treating the proposal only as "do it or not", did the units miss options in between (a reduced version, phased adoption, a different method)? Compare with the framing agent's "options outside the binary", and reflect anything the units did not address in the next actions.
 
 ## 5. Output format
+
+Use the format below as it is: every heading in this order, none dropped or merged. Anything beyond it (an action plan, extra tables, research notes) goes after the format, under its own heading, so the user can tell the deliberation result from the moderator's additions.
 
 ```
 ## MAGI Deliberation Result
