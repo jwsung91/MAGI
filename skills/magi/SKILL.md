@@ -24,7 +24,7 @@ Why framing is separated from the moderator: how the proposal is worded and whic
 ## Flow
 
 1. Gather facts (moderator, section 1).
-2. Frame the proposal (framing agent, or the moderator directly).
+2. Frame the proposal: a separate framing agent wherever the host can launch subagents, for every request. The moderator frames it directly only where it cannot (section 1).
 3. **Ask the user, then stop.** If framing produced questions for the user, ask them all at once and end the turn; deliberate only after the answers (section 1, handling the result). This is the one point where the skill waits for the user.
 4. Review by the three units (section 3).
 5. Resolve (section 4).
@@ -78,6 +78,7 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 - **If deliberation happens without the user having been asked** (an unattended run, or a host that does not hand the turn back), do not settle an ambiguity silently. Make the reading closest to the user's words the main proposal and each other reading a follow-up proposal, deliberate each, and list the questions that were not asked under **Additional information**, each with how its answer would change the outcome, so the user can answer and run MAGI again. This is a fallback, not an alternative: wherever the turn can end, end it.
 - If the framing agent asks for something to be checked from sources, the moderator checks it and adds it to the list of facts.
 - The moderator **does not rewrite** the framing result. If a part clearly contradicts what the user said, point out only that contradiction and run the framing agent once more.
+- Where subagents can be launched, the framing agent frames every request. A short request, or one whose wording already looks clear, is not a reason to skip it: the wording that looks clear is the moderator's own reading, which is the judgment the separate agent is there to take over.
 - If subagents are not available, the moderator frames the proposal directly and states "Framing: moderator directly" in the output. Write "framing agent" only when a separate agent actually produced the framing. Framing directly still produces all seven items above, questions for the user included, and every rule in this list applies unchanged.
 
 ## 2. Grade
@@ -249,7 +250,7 @@ Without such a tool, skip the card: do not print its HTML or create a file for i
 
 Check the result once it is tallied and before any of it is shown, so the card, the Markdown and the JSON all come from the checked result. It matters most when one agent wrote everything, because nothing else checked the units. Repair a failed check by the rule that covers it: a unit that ran as a subagent is re-run, never edited (sections 1 and 4); what the moderator wrote itself, it rewrites.
 - **Questions:** the user was asked and answered, or framing found no question, or the user said to go ahead. Otherwise the questions that were not asked are listed under Additional information and each reading has its own proposal.
-- **Framing line:** says "framing agent" only if a separate agent framed the proposal.
+- **Framing line:** says "framing agent" only if a separate agent framed the proposal. If the moderator framed it although subagents can be launched here, the framing was skipped: run the framing agent now and repeat the review from its result.
 - **Direction:** approve is the change from the current state and the default is stated; for a request asked in the negative, the resolution says what it means for the question as asked.
 - **Facts:** every fact a unit cites is in the list of facts; no personal detail about the user appears that is not in the list.
 - **Cells:** every verdict is approve, reject, or error, and every confidence is high, medium, or low (in the output language). No placeholder from the format is left as written ("...", "Follow-up 1" with no text after it).
@@ -281,6 +282,7 @@ Rules:
 - Build the result once, then derive both the Markdown and the JSON from it, so the two never disagree.
 - Enum values are always the English values below, whatever the output language. Free text (agenda, rationale, perspective, and so on) is written in the output language.
 - When `MAGI_RESULTS_DIR` is set, save to `$MAGI_RESULTS_DIR/YYYYMMDD-HHMMSS-<short-slug>.json` (create the folder if needed), show the Markdown result as usual, and add one line with the file path. Where files cannot be written, output the JSON as a code block only when the user asked for it.
+- In information mode nothing is voted on: leave out `grade`, `grade_raised`, `verdict` and `approve_count`, even if the framing named a grade.
 - The full schema is `result.schema.json` next to this file. The fields:
 
 ```
