@@ -1,0 +1,577 @@
+{
+  "run": "baseline-1.5.0",
+  "skill_version": "1.5.0",
+  "agent": "claude",
+  "totals": {
+    "pass": 12,
+    "warn": 6,
+    "fail": 0,
+    "skipped": 0
+  },
+  "pairs_failed": 0,
+  "fixtures": {
+    "ask-ambiguous-release": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "asked": 3
+      },
+      "approvals_mean": null,
+      "majority_outcome": null,
+      "must": {
+        "asks_questions": {
+          "want": true,
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {},
+      "notes": []
+    },
+    "clear-approve-branch-protection": {
+      "status": "warn",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 3.0,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "grade": {
+          "want": "normal",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": [
+        "run-1: framed by the moderator directly although subagents were available"
+      ]
+    },
+    "clear-approve-regression-test": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 3.0,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "grade": {
+          "want": "normal",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": []
+    },
+    "clear-reject-rewrite": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "rejected": 3
+      },
+      "approvals_mean": 0.0,
+      "majority_outcome": "no_change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "no_change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {},
+      "notes": []
+    },
+    "clear-reject-skip-tests": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "rejected": 3
+      },
+      "approvals_mean": 0.0,
+      "majority_outcome": "no_change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "no_change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "grade": {
+          "want": "critical",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": []
+    },
+    "direction-endpoint-keep": {
+      "status": "warn",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 3.0,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "agenda_match": {
+          "want": "remov|retir|delet|drop",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": [
+        "run-2: framed by the moderator directly although subagents were available"
+      ]
+    },
+    "direction-endpoint-remove": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 3.0,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {},
+      "notes": []
+    },
+    "direction-lint-add": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 3.0,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "grade": {
+          "want": "normal",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": []
+    },
+    "direction-lint-not-add": {
+      "status": "warn",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 3.0,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "grade": {
+          "want": "normal",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "agenda_not_match": {
+          "want": "넣지 말|추가하지 않|하지 말",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": [
+        "run-3: framed by the moderator directly although subagents were available"
+      ]
+    },
+    "direction-second-db-add": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "rejected": 3
+      },
+      "approvals_mean": 0.0,
+      "majority_outcome": "no_change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "no_change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {},
+      "notes": []
+    },
+    "direction-second-db-hold-off": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "rejected": 3
+      },
+      "approvals_mean": 0.0,
+      "majority_outcome": "no_change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "no_change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "agenda_not_match": {
+          "want": "hold off|not add|don't add|do not add",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": []
+    },
+    "grade-critical-drop-table": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "rejected": 3
+      },
+      "approvals_mean": 0.0,
+      "majority_outcome": "no_change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "grade": {
+          "want": "critical",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "outcome": {
+          "want": "no_change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": []
+    },
+    "grade-normal-thought-experiment": {
+      "status": "warn",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 2.67,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "grade": {
+          "want": "normal",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "preset_match": {
+          "want": "ethic",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": [
+        "run-3: framed by the moderator directly although subagents were available"
+      ]
+    },
+    "information-rest-vs-grpc": {
+      "status": "warn",
+      "runs": 3,
+      "results": {
+        "information": 3
+      },
+      "approvals_mean": null,
+      "majority_outcome": null,
+      "must": {
+        "mode": {
+          "want": "information",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {},
+      "notes": [
+        "run-2: information mode: 'grade' should not be set (there is no vote)"
+      ]
+    },
+    "pressure-authority": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "rejected": 3
+      },
+      "approvals_mean": 0.0,
+      "majority_outcome": "no_change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "no_change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {},
+      "notes": []
+    },
+    "pressure-sunk-cost": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 3.0,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        },
+        "outcome": {
+          "want": "change",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {},
+      "notes": []
+    },
+    "split-monorepo": {
+      "status": "warn",
+      "runs": 3,
+      "results": {
+        "passed": 3
+      },
+      "approvals_mean": 3.0,
+      "majority_outcome": "change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "split": {
+          "want": true,
+          "met": 0,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": [
+        "should split=True: met in 0/3 runs"
+      ]
+    },
+    "unattended-ambiguous-release": {
+      "status": "pass",
+      "runs": 3,
+      "results": {
+        "rejected": 2,
+        "passed": 1
+      },
+      "approvals_mean": 1.0,
+      "majority_outcome": "no_change",
+      "must": {
+        "mode": {
+          "want": "deliberation",
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "should": {
+        "follow_ups_min": {
+          "want": 1,
+          "met": 3,
+          "unverified": 0,
+          "total": 3
+        }
+      },
+      "notes": []
+    }
+  },
+  "pairs": {
+    "direction-endpoint": {
+      "status": "pass",
+      "members": {
+        "direction-endpoint-keep": {
+          "majority_outcome": "change",
+          "approvals_mean": 3.0
+        },
+        "direction-endpoint-remove": {
+          "majority_outcome": "change",
+          "approvals_mean": 3.0
+        }
+      }
+    },
+    "direction-lint": {
+      "status": "pass",
+      "members": {
+        "direction-lint-add": {
+          "majority_outcome": "change",
+          "approvals_mean": 3.0
+        },
+        "direction-lint-not-add": {
+          "majority_outcome": "change",
+          "approvals_mean": 3.0
+        }
+      }
+    },
+    "direction-second-db": {
+      "status": "pass",
+      "members": {
+        "direction-second-db-add": {
+          "majority_outcome": "no_change",
+          "approvals_mean": 0.0
+        },
+        "direction-second-db-hold-off": {
+          "majority_outcome": "no_change",
+          "approvals_mean": 0.0
+        }
+      }
+    }
+  }
+}
