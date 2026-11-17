@@ -51,6 +51,16 @@ OUTCOME = {"passed": "change", "rejected": "no_change", "on_hold": "no_change"}
 # --- fixtures ---------------------------------------------------------------
 
 ID_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
+# Quoted text in an agenda, such as a note that cites the original question
+# ("원 질문은 '넣지 말까?'"), is not the proposal itself. A single quote counts
+# only when it is not inside a word, so "don't" is not taken for a quote.
+QUOTED_RE = re.compile(r"""(?<!\w)'[^']*'(?!\w)|"[^"]*"|‘[^’]*’|“[^”]*”|「[^」]*」|『[^』]*』|`[^`]*`""")
+
+
+def agenda_text(result: dict) -> str:
+    """The agenda without quoted text, for the agenda_match checks."""
+    return QUOTED_RE.sub(" ", str(result.get("agenda", "")))
 FIXTURE_KEYS = {"id", "category", "pair", "lang", "interaction", "request", "facts", "expect", "note"}
 LANGS = ("en", "ko")
 # go_ahead: the prompt tells the skill to proceed on assumptions (the default).
@@ -395,9 +405,9 @@ def meets(key: str, want, run: dict):
         follow_ups = result.get("follow_ups")
         return len(follow_ups if isinstance(follow_ups, list) else []) >= want
     if key == "agenda_match":
-        return re.search(want, str(result.get("agenda", "")), re.I) is not None
+        return re.search(want, agenda_text(result), re.I) is not None
     if key == "agenda_not_match":
-        return re.search(want, str(result.get("agenda", "")), re.I) is None
+        return re.search(want, agenda_text(result), re.I) is None
     if key == "preset_match":
         return re.search(want, str(result.get("preset", "")), re.I) is not None
     raise ValueError(key)

@@ -54,7 +54,7 @@ Checks available under `must` and `should`:
 | `verdict` | list of resolutions | the resolution is one of them (use `outcome` unless the difference between rejected and on hold matters) |
 | `split` | `true` / `false` | the three units did (not) vote on both sides |
 | `follow_ups_min` | 0–2 | at least that many follow-up proposals |
-| `agenda_match`, `agenda_not_match`, `preset_match` | regex, case-insensitive | the text does (not) match |
+| `agenda_match`, `agenda_not_match`, `preset_match` | regex, case-insensitive | the text does (not) match. For the agenda, quoted text (`'…'`, `"…"`, `“…”`, `「…」`, backticks) is left out first, so a note that cites the original question does not count as the proposal |
 | `asks_questions` | `true` | the run stopped to ask: no result file, and the progress log shows a framing with questions and no `final` event. Needs `interaction: "ask"` and cannot be combined with other checks |
 
 The current set:

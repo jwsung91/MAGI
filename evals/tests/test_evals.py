@@ -253,6 +253,18 @@ class ResultTests(unittest.TestCase):
         bad = fixture("text", must={"agenda_not_match": "LINT"})
         self.assertEqual(self.check(bad)["fixtures"]["text"]["status"], "fail")
 
+    def test_agenda_ignores_quoted_text(self):
+        cases = [
+            ("CI에 린트 검사를 넣는다. (원 질문은 부정형 '넣지 말까?')", "넣지 말", True),
+            ("Add the database (asked as \u201cshould we hold off?\u201d)", "hold off", True),
+            ("Add the database (asked as `hold off`)", "hold off", True),
+            ("We don't add the database", "don't add", False),  # an apostrophe is not a quote
+            ("CI에 린트 검사를 넣지 말자", "넣지 말", False),
+        ]
+        for agenda, pattern, passes in cases:
+            with self.subTest(agenda=agenda):
+                self.assertEqual(check.meets("agenda_not_match", pattern, {"result": {"agenda": agenda}}), passes)
+
     def test_stopping_to_ask(self):
         ask = lambda fid: fixture(fid, must={"asks_questions": True}, interaction="ask")
         write_run(self.root, "asked", 1, log=ASKED)
