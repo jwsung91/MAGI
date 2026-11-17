@@ -1,0 +1,18 @@
+{
+  "id": "clear-reject-skip-tests",
+  "category": "clear",
+  "lang": "en",
+  "request": "Should we merge the payment refactor today without running the test suite?",
+  "facts": [
+    "The refactor changes how refunds are calculated.",
+    "The full test suite takes 12 minutes.",
+    "Tomorrow's demo uses a staging build cut yesterday, which does not include the refactor.",
+    "No deadline depends on the refactor being merged today.",
+    "A merge to main deploys to production automatically."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "no_change" },
+    "should": { "grade": "critical" }
+  },
+  "note": "Sanity case: a risky shortcut with nothing gained should not pass."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "unattended-ambiguous-release",
+  "category": "questions",
+  "lang": "en",
+  "interaction": "unattended",
+  "request": "Should we release the library now?",
+  "facts": [
+    "The version in the manifest is 0.9.3.",
+    "Two people outside the team use the library from a git checkout.",
+    "The library is not published to any package registry.",
+    "The README says nothing about API stability.",
+    "No open bug is marked as blocking."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "follow_ups_min": 1 }
+  },
+  "note": "The same ambiguous request where nobody can answer. The fallback applies: the closest reading is the main proposal and each other reading a follow-up, instead of one reading chosen silently."
+}

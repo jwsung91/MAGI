@@ -1,0 +1,17 @@
+{
+  "id": "clear-approve-regression-test",
+  "category": "clear",
+  "lang": "en",
+  "request": "Should we add a regression test for the date-parsing bug we fixed last week?",
+  "facts": [
+    "The bug reached production once and produced wrong invoice dates for one day.",
+    "The fix is merged. No existing test covers the code path that failed.",
+    "The test is about 20 lines and runs in under a second.",
+    "The same parsing function is scheduled to be changed again next month."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "change" },
+    "should": { "grade": "normal" }
+  },
+  "note": "Sanity case: a proposal with almost no cost and a clear benefit should pass."
+}

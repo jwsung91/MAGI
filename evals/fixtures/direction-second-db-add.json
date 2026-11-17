@@ -1,0 +1,18 @@
+{
+  "id": "direction-second-db-add",
+  "category": "direction",
+  "pair": "direction-second-db",
+  "lang": "en",
+  "request": "Should we add MongoDB alongside Postgres for the user-settings table?",
+  "facts": [
+    "The user-settings table gets about 200 writes a day and holds 30,000 rows.",
+    "Postgres runs at about 2% of its capacity and has had no incident tied to this table.",
+    "None of the three engineers on the team has run MongoDB in production.",
+    "No planned feature is blocked by keeping the table in Postgres.",
+    "A second database means a second backup job, a second upgrade path and a second on-call runbook."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "no_change" }
+  },
+  "note": "Affirmative half of a pair. An added system with a carrying cost and no stated need: it should not pass."
+}

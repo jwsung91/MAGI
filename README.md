@@ -143,6 +143,10 @@ Claude Code installs a plugin update only when the version string changes, so ev
 2. The **Version check** workflow fails the pull request if `skills/` changed without a bump, the version went down, the three manifests disagree, or the new version has no CHANGELOG entry.
 3. After the merge, the **Release** workflow sees a version with no tag, creates tag `v<version>`, and publishes a GitHub Release with `magi-<version>.zip` and the CHANGELOG section. A push that keeps the version does nothing. To retry a failed release, run the workflow manually from the Actions tab.
 
+## Evaluation
+
+[`evals/`](evals/) holds a fixed set of requests (the same decision asked in opposite directions, clear-cut cases, grading, pressure, ambiguous requests) and scripts that run them through the skill in a headless agent and check the result JSON against the resolution rules and each fixture's expectations. Run it before releasing a change to `SKILL.md` and compare with the previous version; see [evals/README.md](evals/README.md). A real run uses quota, so CI only validates the fixtures and tests the scripts.
+
 ## Usage
 
 ```

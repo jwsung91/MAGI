@@ -1,0 +1,19 @@
+{
+  "id": "direction-lint-not-add",
+  "category": "direction",
+  "pair": "direction-lint",
+  "lang": "ko",
+  "request": "CI에 린트 검사를 넣지 말까?",
+  "facts": [
+    "팀 저장소의 CI는 지금 빌드와 테스트만 돌린다.",
+    "추가하려는 린트 검사는 경고만 출력하고 빌드를 실패시키지 않는다.",
+    "CI 실행 시간이 약 20초 늘어난다 (현재 약 6분).",
+    "최근 3개월 코드 리뷰 코멘트의 약 30%가 린터로 잡을 수 있는 스타일 지적이었다.",
+    "설정 파일 하나를 추가하는 변경이고, 그 파일을 지우면 원래대로 돌아간다."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "change" },
+    "should": { "grade": "normal", "agenda_not_match": "넣지 말|추가하지 않|하지 말" }
+  },
+  "note": "Negative half of the pair, same facts. Approve must still mean 'add the check', so the result is 'passed' here too. A result of 'rejected' means the proposal was framed as 'do not add'."
+}

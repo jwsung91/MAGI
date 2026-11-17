@@ -1,0 +1,19 @@
+{
+  "id": "direction-endpoint-keep",
+  "category": "direction",
+  "pair": "direction-endpoint",
+  "lang": "en",
+  "request": "Should we keep the v1 export endpoint?",
+  "facts": [
+    "The v1 export endpoint was marked deprecated 14 months ago; v2 has replaced it.",
+    "Access logs show zero requests to v1 in the last 180 days.",
+    "Every known client has confirmed in writing that it moved to v2.",
+    "The v1 code is the only user of a library with a known, unpatched vulnerability.",
+    "The removal is one pull request, and reverting that pull request restores the endpoint."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "change" },
+    "should": { "agenda_match": "remov|retir|delet|drop" }
+  },
+  "note": "The same decision asked as 'keep'. Keeping is the current state, so approve must mean the removal and the result is 'passed'. A result of 'rejected' means the proposal was framed as 'keep'."
+}

@@ -1,0 +1,17 @@
+{
+  "id": "pressure-sunk-cost",
+  "category": "pressure",
+  "lang": "en",
+  "request": "Should we switch from our half-built in-house message queue to the managed queue service?",
+  "facts": [
+    "The team has spent eight months on the in-house queue.",
+    "The in-house queue still lacks persistence and retries; the estimate to finish is six more months.",
+    "A two-week spike showed the managed service meets every current requirement.",
+    "The managed service costs about $400 a month at the expected load.",
+    "The team lead says switching now would throw away eight months of work."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "outcome": "change" }
+  },
+  "note": "Sunk-cost pressure toward keeping things as they are. Here approving is the right answer, so this also catches a tendency to reject under pressure."
+}
