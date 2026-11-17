@@ -34,6 +34,11 @@ once, as a quick check that nothing broke; --only narrows a run by fixture,
 category or pair. What the agent reports as its cost is kept in meta.json
 and totalled by check.py.
 
+--control runs the deliberation fixtures without the skill: the same request
+and facts asked once, with no plugin, skill, MCP server or tool, answering
+change or no_change. check.py control compares those answers with MAGI's
+majority outcome, to see what the three units add over one question.
+
 Standard library only.
 """
 
@@ -70,34 +75,15 @@ DEFAULT_COMMAND = [
     "--no-session-persistence",
 ]
 
-# The words around the request, per fixture language. The request itself goes
-# in unchanged; the skill answers in the language of the request.
-PROMPT = {
-    "en": {
-        "ask": "Decide with MAGI: {request}",
-        "facts": "Facts (this list is complete; do not look anything up):",
-        "go_ahead": "If anything else is missing, treat it as an assumption and go ahead without asking me.",
-        "unattended": "This is an unattended run: nobody can answer questions, and the turn cannot be handed back.",
-    },
-    "ko": {
-        "ask": "MAGI로 판단해줘: {request}",
-        "facts": "사실 (이 목록이 전부이며, 따로 찾아보지 않는다):",
-        "go_ahead": "더 필요한 정보가 있으면 가정으로 두고, 나에게 묻지 말고 진행해줘.",
-        "unattended": "이 실행은 무인 실행이다. 질문에 답할 사람이 없고, 턴을 넘길 수도 없다.",
-    },
-}
-
-
-def build_prompt(fx: dict) -> str:
-    words = PROMPT[fx.get("lang", "en")]
-    parts = [words["ask"].format(request=fx["request"])]
-    if fx["facts"]:
-        parts.append("\n".join([words["facts"]] + [f"- {fact}" for fact in fx["facts"]]))
-    interaction = fx.get("interaction", "go_ahead")
-    if interaction != "ask":  # 'ask' adds nothing: a real question must end the turn
-        parts.append(words[interaction])
-    return "\n\n".join(parts)
-
+# The control (--control): the same request and facts asked once, with no
+# skill, plugin, MCP server or tool, so only the model's own judgement answers.
+# --safe-mode leaves out installed plugins, skills, CLAUDE.md and the rest.
+CONTROL_COMMAND = [
+    "claude", "-p", "{prompt}",
+    "--safe-mode", "--tools", "", "--strict-mcp-config",
+    "--output-format", "json",
+    "--no-session-persistence",
+]
 
 def select(fixtures: dict, only: str) -> dict:
     if not only:
@@ -112,7 +98,8 @@ def select(fixtures: dict, only: str) -> dict:
     return chosen
 
 
-def run_once(fx: dict, k: int, run_root: Path, command: list, timeout: int, force: bool) -> str:
+def run_once(fx: dict, k: int, run_root: Path, command: list, timeout: int, force: bool,
+             control: bool = False) -> str:
     run_dir = run_root / fx["id"] / f"run-{k}"
     if (run_dir / "meta.json").exists() and not force:
         return "skipped (already run)"
@@ -120,16 +107,16 @@ def run_once(fx: dict, k: int, run_root: Path, command: list, timeout: int, forc
         shutil.rmtree(run_dir)
     run_dir.mkdir(parents=True)
     with tempfile.TemporaryDirectory(prefix="magi-eval-") as tmp:
-        status = _run_in(Path(tmp), fx, k, run_dir, command, timeout)
+        status = _run_in(Path(tmp), fx, k, run_dir, command, timeout, control)
     return status
 
 
-def _run_in(tmp: Path, fx: dict, k: int, run_dir: Path, command: list, timeout: int) -> str:
+def _run_in(tmp: Path, fx: dict, k: int, run_dir: Path, command: list, timeout: int, control: bool) -> str:
     result_dir, work_dir = tmp / "result", tmp / "work"
     result_dir.mkdir()
     work_dir.mkdir()
 
-    prompt = build_prompt(fx)
+    prompt = check.build_control_prompt(fx) if control else check.build_prompt(fx)
     (run_dir / "prompt.txt").write_text(prompt + "\n", encoding="utf-8")
     argv = [part.replace("{prompt}", prompt).replace("{plugin_dir}", str(ROOT))
             .replace("{results_dir}", str(result_dir)) for part in command]
@@ -151,12 +138,16 @@ def _run_in(tmp: Path, fx: dict, k: int, run_dir: Path, command: list, timeout: 
     meta = {"fixture": fx["id"], "run": k, "exit_code": exit_code, "timed_out": timed_out,
             "seconds": round(time.monotonic() - started, 1), "cost_usd": check.agent_cost(stdout),
             "agent_error": check.agent_error(stdout), "result_files": results}
+    if control:
+        meta["answer"] = check.control_answer(stdout)
     # Written last: its presence marks the run as finished.
     (run_dir / "meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
     if timed_out:
         return f"timed out after {timeout}s"
     if meta["agent_error"] and not results:
         return f"agent error: {meta['agent_error']}"
+    if control:
+        return f"answer {meta['answer'] or 'missing'} (exit {exit_code}, {meta['seconds']}s)"
     return f"{'result' if results else 'no result'} (exit {exit_code}, {meta['seconds']}s)"
 
 
@@ -178,6 +169,8 @@ def main(argv=None) -> int:
     parser.add_argument("--jobs", type=int, default=1, help="executions in parallel (default 1)")
     parser.add_argument("--timeout", type=int, default=1800, help="seconds per execution (default 1800)")
     parser.add_argument("--model", help="passed to the default command as --model")
+    parser.add_argument("--control", action="store_true",
+                        help="ask each deliberation fixture once without the skill and record change / no_change")
     parser.add_argument("--cmd-json", help='the agent command as a JSON list, e.g. \'["codex", "exec", "{prompt}"]\'')
     parser.add_argument("--fixtures", default=str(check.FIXTURES_DIR))
     parser.add_argument("--out", default=str(OUT_DIR))
@@ -193,6 +186,8 @@ def main(argv=None) -> int:
     if args.smoke:
         fixtures = {fid: fx for fid, fx in fixtures.items() if fx.get("smoke")}
     fixtures = select(fixtures, args.only)
+    if args.control:
+        fixtures = {fid: fx for fid, fx in fixtures.items() if check.control_eligible(fx)}
     if not fixtures:
         print("error: no fixtures selected", file=sys.stderr)
         return 2
@@ -207,12 +202,13 @@ def main(argv=None) -> int:
             print("error: --cmd-json must be a non-empty JSON list of strings", file=sys.stderr)
             return 2
     else:
-        command = DEFAULT_COMMAND + (["--model", args.model] if args.model else [])
+        command = (CONTROL_COMMAND if args.control else DEFAULT_COMMAND) + (["--model", args.model] if args.model else [])
 
     if args.dry_run:
         print("command:", json.dumps(command, ensure_ascii=False))
         for fid, fx in fixtures.items():
-            print(f"\n=== {fid} ===\n{build_prompt(fx)}")
+            prompt = check.build_control_prompt(fx) if args.control else check.build_prompt(fx)
+            print(f"\n=== {fid} ===\n{prompt}")
         return 0
 
     if shutil.which(command[0]) is None:
@@ -220,12 +216,13 @@ def main(argv=None) -> int:
         return 2
 
     version = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))["version"]
-    name = args.name or f"{version}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    name = args.name or (f"control-{stamp}" if args.control else f"{version}-{stamp}")
     run_root = Path(args.out) / name
     run_root.mkdir(parents=True, exist_ok=True)
     (run_root / "run.json").write_text(json.dumps({
         "name": name, "skill_version": version, "commit": git_commit(), "agent": command[0],
-        "command": command, "model": args.model, "runs": runs, "smoke": args.smoke,
+        "command": command, "model": args.model, "runs": runs, "smoke": args.smoke, "control": args.control,
         "started": datetime.now().astimezone().isoformat(timespec="seconds"),
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -234,12 +231,15 @@ def main(argv=None) -> int:
 
     def work(job):
         fx, k = job
-        status = run_once(fx, k, run_root, command, args.timeout, args.force)
+        status = run_once(fx, k, run_root, command, args.timeout, args.force, args.control)
         print(f"  {fx['id']} run-{k}: {status}", flush=True)
 
     with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
         list(pool.map(work, jobs))
-    print(f"\nNext: python3 evals/check.py results {run_root}")
+    if args.control:
+        print(f"\nNext: python3 evals/check.py control {run_root} evals/out/<MAGI run>...")
+    else:
+        print(f"\nNext: python3 evals/check.py results {run_root}")
     return 0
 
 

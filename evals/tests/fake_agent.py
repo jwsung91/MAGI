@@ -6,7 +6,8 @@ it writes a result JSON and a progress log into $MAGI_RESULTS_DIR, or, for a
 prompt that neither says to go ahead nor that the run is unattended, only a
 log whose framing left a question (the turn ended on the question).
 No model is involved; the verdict is always 3/3 approve, and every execution
-reports a cost of $0.25.
+reports a cost of $0.25. A control prompt (run.py --control, which asks for a
+"DECISION:" line) is answered with "DECISION: no_change" and nothing written.
 """
 
 import json
@@ -17,6 +18,9 @@ from pathlib import Path
 
 def main() -> int:
     prompt = sys.argv[1]
+    if "DECISION:" in prompt:
+        print(json.dumps({"type": "result", "result": "Leave it.\n\nDECISION: no_change", "total_cost_usd": 0.05}))
+        return 0
     out = Path(os.environ["MAGI_RESULTS_DIR"])
     run_id = "20260101-000000-fake"
     proceeds = any(s in prompt for s in ("go ahead", "unattended", "진행해줘", "무인 실행"))

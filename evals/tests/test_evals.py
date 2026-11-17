@@ -68,11 +68,11 @@ class FixtureTests(unittest.TestCase):
     def test_every_fixture_builds_a_prompt_with_its_request(self):
         fixtures, _ = check.load_fixtures(check.FIXTURES_DIR)
         for fx in fixtures.values():
-            self.assertIn(fx["request"], run.build_prompt(fx))
+            self.assertIn(fx["request"], check.build_prompt(fx))
 
     def test_ask_fixture_prompt_does_not_say_go_ahead(self):
         fixtures, _ = check.load_fixtures(check.FIXTURES_DIR)
-        prompt = run.build_prompt(fixtures["ask-ambiguous-release"])
+        prompt = check.build_prompt(fixtures["ask-ambiguous-release"])
         self.assertNotIn("go ahead", prompt)
         self.assertNotIn("unattended", prompt)
 
@@ -91,6 +91,9 @@ class FixtureTests(unittest.TestCase):
         self.assertTrue(self._errors(fixture("x", must={"asks_questions": True, "mode": "deliberation"},
                                              interaction="ask")))
         self.assertEqual(self._errors(fixture("x", must={"asks_questions": True}, interaction="ask")), [])
+        self.assertEqual(self._errors(fixture("x", should={"units": {"melchior": "reject"}})), [])
+        for bad in ({}, {"melchior": "yes"}, {"gaspar": "approve"}, ["melchior"]):
+            self.assertTrue(self._errors(fixture("x", should={"units": bad})), bad)
 
     def test_pair_needs_two_fixtures(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -311,6 +314,18 @@ class ResultTests(unittest.TestCase):
         self.assertEqual(summary["pairs"]["p"]["status"], "pass")
         self.assertEqual(summary["fixtures"]["not-add"]["approvals_mean"], 2.0)
 
+    def test_unit_votes_are_checked_and_counted(self):
+        fx = fixture("u", should={"units": {"melchior": "reject", "casper": "approve"}})
+        write_run(self.root, "u", 1, result(votes=("reject", "approve", "approve")))   # meets it
+        write_run(self.root, "u", 2, result(votes=("approve", "approve", "approve")))  # melchior wrong
+        write_run(self.root, "u", 3, information())                                    # not voted on
+        e = self.check(fx)["fixtures"]["u"]
+        self.assertEqual(e["should"]["units"]["met"], 1)
+        self.assertEqual(e["status"], "warn")
+        self.assertEqual(e["votes"]["results"], 2)
+        self.assertEqual(e["unit_approvals"], {"melchior": 1, "balthasar": 2, "casper": 2})
+        self.assertIn("| 1/2 · 2/2 · 2/2 |", check.render_report(self.check(fx)))
+
     def test_report_and_compare(self):
         fx = fixture("f", must={"outcome": "change"})
         write_run(self.root, "f", 1, result())
@@ -400,6 +415,69 @@ class StatsTests(unittest.TestCase):
             self.assertEqual(check.main(["results", str(check.HERE / "baseline" / "1.5.0")]), 2)
 
 
+class ControlTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_control_prompt_and_answer(self):
+        fixtures, _ = check.load_fixtures(check.FIXTURES_DIR)
+        prompt = check.build_control_prompt(fixtures["direction-lint-en-not-add"])
+        self.assertIn("Should we not add a lint check to CI?", prompt)
+        self.assertIn("adding X is still \"change\"", prompt)
+        self.assertNotIn("MAGI", prompt)
+        self.assertIn("넣지 말까", check.build_control_prompt(fixtures["direction-lint-not-add"]))
+        eligible = {fid for fid, fx in fixtures.items() if check.control_eligible(fx)}
+        self.assertNotIn("information-rest-vs-grpc", eligible)
+        self.assertNotIn("ask-ambiguous-release", eligible)
+        self.assertIn("split-monorepo", eligible)
+
+        answer = lambda text: check.control_answer(json.dumps({"type": "result", "result": text}))
+        self.assertEqual(answer("Reasons...\nDECISION: no_change"), "no_change")
+        self.assertEqual(answer("**DECISION:** change"), "change")  # a bold label still counts
+        self.assertEqual(answer("DECISION: **change**"), "change")
+        self.assertEqual(answer("decision: Change"), "change")
+        self.assertEqual(answer("DECISION: change ... on reflection DECISION: no_change"), "no_change")
+        self.assertIsNone(answer("I would leave it."))
+
+    def _control_run(self, fid, k, prompt, answer):
+        run_dir = self.root / "control" / fid / f"run-{k}"
+        run_dir.mkdir(parents=True)
+        (run_dir / "prompt.txt").write_text(prompt + "\n", encoding="utf-8")
+        (run_dir / "meta.json").write_text(json.dumps({"answer": answer}), encoding="utf-8")
+
+    def _magi_run(self, base, fid, k, prompt, votes):
+        write_run(self.root / base, fid, k, result(votes=votes))
+        (self.root / base / fid / f"run-{k}" / "prompt.txt").write_text(prompt + "\n", encoding="utf-8")
+
+    def test_comparison_counts_only_runs_with_the_current_facts(self):
+        fx = fixture("f", should={"split": True}, facts=["a fact"])
+        old = dict(fx, facts=["an earlier fact"])
+        for k, answer in enumerate(("no_change", "no_change", "change"), 1):
+            self._control_run("f", k, check.build_control_prompt(fx), answer)
+        self._control_run("f", 4, check.build_control_prompt(old), "change")      # earlier facts: ignored
+        self._magi_run("a", "f", 1, check.build_prompt(old), ("approve",) * 3)     # earlier facts: ignored
+        self._magi_run("b", "f", 1, check.build_prompt(fx), ("reject",) * 3)
+        self._magi_run("b", "f", 2, check.build_prompt(fx), ("approve", "reject", "reject"))
+        (self.root / "control" / "run.json").write_text(json.dumps({"control": True}), encoding="utf-8")
+
+        summary = check.check_control(self.root / "control", [self.root / "a", self.root / "b"], {"f": fx})
+        row = summary["fixtures"]["f"]
+        self.assertEqual(row["control"], ["no_change", "no_change", "change"])
+        self.assertEqual((row["control_majority"], row["magi_majority"], row["agree"]), ("no_change", "no_change", True))
+        self.assertEqual(row["magi_sources"], ["b (2)"])
+        self.assertEqual((summary["agreed"], summary["compared"]), (1, 1))
+        self.assertIn("Control agreed with MAGI on 1 of 1 fixtures", check.render_control(summary))
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check.main(["control", str(self.root / "control"), str(self.root / "b")]), 0)
+        self.assertTrue((self.root / "control" / "control.md").exists())
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(check.main(["control", str(self.root / "b"), str(self.root / "a")]), 2)  # not a control
+            self.assertEqual(check.main(["results", str(self.root / "control")]), 2)  # results refuses a control
+
+
 class RunnerTests(unittest.TestCase):
     def test_run_then_check_with_a_fake_agent(self):
         fake = [sys.executable, str(Path(__file__).with_name("fake_agent.py")), "{prompt}"]
@@ -443,6 +521,28 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(summary["executions"], len(marked))
             self.assertEqual(summary["cost_usd"], 0.25 * len(marked))
             self.assertIn(f"${summary['cost_usd']:.2f} ($0.25 each)", check.render_report(summary))
+
+    def test_control_run_with_a_fake_agent(self):
+        fake = [sys.executable, str(Path(__file__).with_name("fake_agent.py")), "{prompt}"]
+        with tempfile.TemporaryDirectory() as tmp:
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(run.main(["--name", "m", "--out", tmp, "--runs", "1", "--cmd-json", json.dumps(fake),
+                                           "--only", "direction-lint-en,information"]), 0)
+                self.assertEqual(run.main(["--name", "c", "--out", tmp, "--runs", "2", "--control",
+                                           "--cmd-json", json.dumps(fake),
+                                           "--only", "direction-lint-en,information"]), 0)
+            control = Path(tmp) / "c"
+            self.assertFalse((control / "information-rest-vs-grpc").exists())  # not a deliberation fixture
+            meta = json.loads((control / "direction-lint-en-add" / "run-2" / "meta.json").read_text(encoding="utf-8"))
+            self.assertEqual(meta["answer"], "no_change")
+            self.assertTrue(json.loads((control / "run.json").read_text(encoding="utf-8"))["control"])
+            fixtures, _ = check.load_fixtures(check.FIXTURES_DIR)
+            summary = check.check_control(control, [Path(tmp) / "m"], fixtures)
+            self.assertEqual((summary["agreed"], summary["compared"]), (0, 2))  # fake MAGI approves, control does not
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(run.main(["--dry-run", "--control", "--only", "split-monorepo"]), 0)
+        self.assertIn('"--safe-mode", "--tools", ""', out.getvalue())
 
     def test_smoke_and_only_narrow_together(self):
         out = io.StringIO()

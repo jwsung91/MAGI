@@ -58,6 +58,7 @@ Checks available under `must` and `should`:
 | `split` | `true` / `false` | the three units did (not) vote on both sides |
 | `follow_ups_min` | 0–2 | at least that many follow-up proposals |
 | `agenda_match`, `agenda_not_match`, `preset_match` | regex, case-insensitive | the text does (not) match. For the agenda, quoted text (`'…'`, `"…"`, `“…”`, `「…」`, backticks) and parenthetical notes (`(…)`) are left out first, so a note that cites the original question or spells out what the vote means does not count as the proposal |
+| `units` | object, e.g. `{"melchior": "reject", "balthasar": "approve"}` | each unit listed cast that final vote (after a debate round, if there was one). Any subset of the three units; used by the designed-conflict `split` fixtures, in `should` |
 | `asks_questions` | `true` | the run stopped to ask: no result file, and the progress log shows a framing with questions and no `final` event. Needs `interaction: "ask"` and cannot be combined with other checks |
 
 The current set:
@@ -110,6 +111,8 @@ Besides the table of fixtures, the report gives three numbers for the whole run:
 - **Unanimous votes**: of the results that were voted on, how many had all three units on the same side. Most fixtures are clear-cut on purpose, so this is high; it is the number to watch when the perspectives, or the models behind the units, change.
 - **Framed by the moderator directly**: how many results were framed without the framing agent although subagents were available.
 
+The fixture table also has a **Units M · B · C** column: of a fixture's voted results, how many each unit approved (MELCHIOR-1, BALTHASAR-2, CASPER-3). `summary.json` keeps the same counts as `unit_approvals`. Read it next to a `units` expectation: three units that always vote together show as `3/3 · 3/3 · 3/3` or `0/3 · 0/3 · 0/3` whatever the fixture asks.
+
 An execution in which the agent reports an error instead of working (not logged in, out of quota) is shown as `agent error: …` by both scripts.
 
 The default agent is Claude Code (`claude -p`) with this repository loaded as a plugin through `--plugin-dir`, so the skill under test is the one in the working tree, not an installed copy. Bash, Read, Write, Agent and Skill are allowed and web tools are denied; the agent runs in an empty temporary folder outside the repository, with the results folder added through `--add-dir`, and both are copied to `evals/out/` when it ends. (Claude Code denies Write anywhere under the `--plugin-dir` tree as a sensitive file, so the results folder cannot live under `evals/out/` while the agent runs.) To run another agent, give the whole command as a JSON list, with that agent's own flags; `{prompt}`, `{plugin_dir}` and `{results_dir}` are filled in:
@@ -119,6 +122,17 @@ python3 evals/run.py --name codex-trial --cmd-json '["codex", "exec", "{prompt}"
 ```
 
 The agent has to have the skill installed in that case, and has to be able to run shell commands, because results are collected through `MAGI_RESULTS_DIR`.
+
+## Control: one question without the skill
+
+```bash
+python3 evals/run.py --name control-1 --control --model claude-opus-5-5
+python3 evals/check.py control evals/out/control-1 evals/out/baseline-1.5.0 evals/out/after-1.5.1
+```
+
+`--control` asks each deliberation fixture (not information mode, not the ones that should stop to ask) the same request and facts once, with no skill: Claude Code runs with `--safe-mode --tools "" --strict-mcp-config`, so no installed plugin, skill, CLAUDE.md, MCP server or tool takes part. The prompt asks for `DECISION: change` or `DECISION: no_change`, and defines change as the action that changes the current state, so that a question asked in the negative ("should we not add X?") still answers in the same direction as MAGI, whose approve is always the change. The answer goes in each run's `meta.json`.
+
+`check.py control` puts the control answers next to the majority outcome of the MAGI runs given (passed is change; rejected and on hold are no_change) and ends with one line: on how many fixtures the control agreed with MAGI. A MAGI run counts for a fixture only if its `prompt.txt` matches the fixture's current request and facts, so runs made with an earlier version of a fixture are left out on their own. It writes `control.md` and `control.json` into the control folder. Agreement on nearly every fixture means that, on this set, the three units add no decision information over asking once; it says nothing about the reasons and recommendations MAGI also gives.
 
 ## Comparing two versions of the skill
 
