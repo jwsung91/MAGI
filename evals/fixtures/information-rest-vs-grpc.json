@@ -2,6 +2,7 @@
   "id": "information-rest-vs-grpc",
   "category": "information",
   "lang": "en",
+  "smoke": true,
   "request": "What are the trade-offs between REST and gRPC for calls between our internal services?",
   "facts": [
     "There are six internal services, all written in Go.",

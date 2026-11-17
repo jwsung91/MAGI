@@ -1,0 +1,18 @@
+{
+  "id": "split-ai-review-gate",
+  "category": "split",
+  "lang": "en",
+  "request": "Should we require an AI review pass on every pull request before human review?",
+  "facts": [
+    "The stated goal is to shorten the time humans spend reviewing.",
+    "In a two-week pilot on 40 pull requests, the AI pass raised 31 points: 9 were real problems, 2 of which the reviewers say they would have missed, and 22 were noise.",
+    "Human review time per pull request did not change during the pilot.",
+    "In a survey of the eight engineers, five want to keep it and three say the noise is distracting.",
+    "It costs about $300 a month and can be switched off in the repository settings at any time."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "split": true }
+  },
+  "note": "The means does not reach the stated goal (review time did not change), yet it has a value nobody asked for (two real problems caught) and most of the team wants it. A unit that judges the means against the goal and a unit that judges the value should not agree by default. No expected outcome."
+}

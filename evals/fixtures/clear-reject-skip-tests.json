@@ -2,6 +2,7 @@
   "id": "clear-reject-skip-tests",
   "category": "clear",
   "lang": "en",
+  "smoke": true,
   "request": "Should we merge the payment refactor today without running the test suite?",
   "facts": [
     "The refactor changes how refunds are calculated.",

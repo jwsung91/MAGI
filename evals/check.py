@@ -67,7 +67,7 @@ MODERATOR_FRAMING_RE = re.compile(r"moderator|모더레이터", re.I)
 def agenda_text(result: dict) -> str:
     """The agenda without quoted text or parenthetical notes, for the agenda_match checks."""
     return PAREN_RE.sub(" ", QUOTED_RE.sub(" ", str(result.get("agenda", ""))))
-FIXTURE_KEYS = {"id", "category", "pair", "lang", "interaction", "request", "facts", "expect", "note"}
+FIXTURE_KEYS = {"id", "category", "pair", "lang", "interaction", "smoke", "request", "facts", "expect", "note"}
 LANGS = ("en", "ko")
 # go_ahead: the prompt tells the skill to proceed on assumptions (the default).
 # ask: nothing is added, so a real question must end the turn.
@@ -121,6 +121,8 @@ def validate_fixture(path: Path, fx) -> list:
         errors.append(f"interaction must be one of {INTERACTIONS}")
     if "pair" in fx and (not isinstance(fx["pair"], str) or not ID_RE.match(fx["pair"])):
         errors.append("pair must be lowercase words joined by hyphens")
+    if not isinstance(fx.get("smoke", False), bool):
+        errors.append("smoke must be true or false")
 
     expect = fx.get("expect")
     if not isinstance(expect, dict) or set(expect) - {"must", "should"}:
@@ -343,12 +345,57 @@ def read_log(path: Path):
     return asked, finished
 
 
+def _agent_report(stdout: str) -> dict:
+    """What the agent printed about its own execution, or {}.
+
+    Claude Code with --output-format json prints one JSON object (or, in
+    stream form, a list whose last 'result' entry is that object). Other
+    agents print nothing this script knows how to read."""
+    try:
+        data = json.loads(stdout)
+    except json.JSONDecodeError:
+        return {}
+    for entry in reversed(data if isinstance(data, list) else [data]):
+        if isinstance(entry, dict) and ("total_cost_usd" in entry or entry.get("type") == "result"):
+            return entry
+    return {}
+
+
+def agent_cost(stdout: str):
+    """The cost in US dollars the agent reported for one execution, or None."""
+    cost = _agent_report(stdout).get("total_cost_usd")
+    if isinstance(cost, (int, float)) and not isinstance(cost, bool):
+        return round(float(cost), 4)
+    return None
+
+
+def agent_error(stdout: str):
+    """The error the agent reported instead of doing the work (not logged in,
+    out of quota, over budget), or None."""
+    report = _agent_report(stdout)
+    if report.get("is_error") is True:
+        return " ".join(str(report.get("result") or report.get("subtype") or "error").split())[:200]
+    return None
+
+
 def read_run(run_dir: Path, schema: dict, subagents: bool = False) -> dict:
     """One execution of one fixture: its result (if any), what is wrong with
     it, and whether the run stopped to ask the user. With subagents=True, a
     result framed by the moderator directly is a warning: SKILL.md allows that
     only when subagents are not available."""
-    run = {"name": run_dir.name, "result": None, "problems": [], "warnings": [], "stopped_to_ask": None}
+    run = {"name": run_dir.name, "result": None, "problems": [], "warnings": [], "stopped_to_ask": None,
+           "direct_framing": False, "seconds": None, "cost_usd": None}
+    meta = {}
+    if (run_dir / "meta.json").exists():
+        try:
+            meta = json.loads((run_dir / "meta.json").read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            pass
+    run["seconds"] = meta.get("seconds")
+    run["cost_usd"] = meta.get("cost_usd")
+    if run["cost_usd"] is None and (run_dir / "stdout.txt").exists():
+        # A run made before run.py recorded the cost: read it from the agent's output.
+        run["cost_usd"] = agent_cost((run_dir / "stdout.txt").read_text(encoding="utf-8", errors="replace"))
     result_dir = run_dir / "result"
     results = sorted(result_dir.glob("*.json")) if result_dir.is_dir() else []
     logs = sorted(result_dir.glob("*.jsonl")) if result_dir.is_dir() else []
@@ -359,16 +406,12 @@ def read_run(run_dir: Path, schema: dict, subagents: bool = False) -> dict:
         # from a run that simply died.
         if logs:
             run["stopped_to_ask"] = bool(asked) and not finished
-        meta_path = run_dir / "meta.json"
-        if meta_path.exists():
-            try:
-                meta = json.loads(meta_path.read_text(encoding="utf-8"))
-                if meta.get("timed_out"):
-                    run["warnings"].append("agent timed out")
-                elif meta.get("exit_code") not in (0, None):
-                    run["warnings"].append(f"agent exited with code {meta['exit_code']}")
-            except json.JSONDecodeError:
-                pass
+        if meta.get("timed_out"):
+            run["warnings"].append("agent timed out")
+        elif meta.get("agent_error"):
+            run["warnings"].append(f"agent error: {meta['agent_error']}")
+        elif meta.get("exit_code") not in (0, None):
+            run["warnings"].append(f"agent exited with code {meta['exit_code']}")
         return run
 
     run["stopped_to_ask"] = False
@@ -388,6 +431,7 @@ def read_run(run_dir: Path, schema: dict, subagents: bool = False) -> dict:
     run["problems"].extend(problems)
     run["warnings"].extend(warnings)
     if subagents and MODERATOR_FRAMING_RE.search(str(result.get("framing", ""))):
+        run["direct_framing"] = True
         run["warnings"].append("framed by the moderator directly although subagents were available")
     return run
 
@@ -434,10 +478,25 @@ def run_label(run: dict) -> str:
 
 def evaluate_fixture(fx: dict, runs: list) -> dict:
     out = {"status": "pass", "runs": len(runs), "results": {}, "approvals_mean": None,
-           "majority_outcome": None, "must": {}, "should": {}, "notes": []}
+           "majority_outcome": None, "must": {}, "should": {}, "notes": [],
+           "votes": {"results": 0, "unanimous": 0}, "direct_framing": 0, "cost_usd": None, "seconds": None}
     if not runs:
         out["status"] = "skipped"
         return out
+
+    # Counted over results that were voted on: how often all three units landed
+    # on the same side, and how often the moderator framed the proposal itself.
+    for r in runs:
+        votes = unit_votes(r["result"].get("units")) if r["result"] is not None else []
+        if r["result"] is not None and r["result"].get("mode") != "information" \
+                and set(votes) <= {"approve", "reject"}:
+            out["votes"]["results"] += 1
+            out["votes"]["unanimous"] += len(set(votes)) == 1
+    out["direct_framing"] = sum(1 for r in runs if r["direct_framing"])
+    costs = [r["cost_usd"] for r in runs if r["cost_usd"] is not None]
+    seconds = [r["seconds"] for r in runs if r["seconds"] is not None]
+    out["cost_usd"] = round(sum(costs), 4) if costs else None
+    out["seconds"] = round(sum(seconds), 1) if seconds else None
 
     out["results"] = dict(Counter(run_label(r) for r in runs))
     approvals = [unit_votes(r["result"].get("units")).count("approve") for r in runs
@@ -520,12 +579,24 @@ def check_results(run_dir: Path, fixtures: dict) -> dict:
         evaluated[fid] = evaluate_fixture(fx, [read_run(p, schema, subagents) for p in run_dirs])
     pairs = evaluate_pairs(fixtures, evaluated)
     totals = Counter(e["status"] for e in evaluated.values())
+    ran = [e for e in evaluated.values() if e["runs"]]
+    costs = [e["cost_usd"] for e in ran if e["cost_usd"] is not None]
+    seconds = [e["seconds"] for e in ran if e["seconds"] is not None]
+    with_result = sum(n for e in ran for label, n in e["results"].items() if label not in ("asked", "no result"))
     return {
         "run": meta.get("name", run_dir.name),
         "skill_version": meta.get("skill_version"),
         "agent": meta.get("agent"),
+        "model": meta.get("model"),
         "totals": {s: totals.get(s, 0) for s in ("pass", "warn", "fail", "skipped")},
         "pairs_failed": sum(1 for p in pairs.values() if p["status"] == "fail"),
+        "executions": sum(e["runs"] for e in ran),
+        "cost_usd": round(sum(costs), 2) if costs else None,
+        "seconds": round(sum(seconds)) if seconds else None,
+        "votes": {"results": sum(e["votes"]["results"] for e in ran),
+                  "unanimous": sum(e["votes"]["unanimous"] for e in ran)},
+        # None when the agent's subagents are not known (a --cmd-json command).
+        "framing": {"results": with_result, "direct": sum(e["direct_framing"] for e in ran)} if subagents else None,
         "fixtures": evaluated,
         "pairs": pairs,
     }
@@ -533,6 +604,36 @@ def check_results(run_dir: Path, fixtures: dict) -> dict:
 
 def _cell(text) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
+
+
+def _duration(seconds) -> str:
+    minutes = round(seconds / 60)
+    return f"{minutes // 60}h {minutes % 60:02d}m" if minutes >= 60 else f"{minutes}m"
+
+
+def _stats(summary: dict) -> dict:
+    """The run-wide numbers as text, keyed by label. Summaries written before
+    these numbers existed simply have none."""
+    stats = {}
+    n = summary.get("executions")
+    if n:
+        parts = [str(n)]
+        if summary.get("cost_usd") is not None:
+            parts.append(f"${summary['cost_usd']:.2f} (${summary['cost_usd'] / n:.2f} each)")
+        if summary.get("seconds") is not None:
+            parts.append(f"{_duration(summary['seconds'])} of agent time")
+        stats["Executions"] = " · ".join(parts)
+    votes = summary.get("votes")
+    if votes and votes["results"]:
+        stats["Unanimous votes"] = f"{votes['unanimous']} of {votes['results']} voted results"
+    framing = summary.get("framing")
+    if framing and framing["results"]:
+        stats["Framed by the moderator directly"] = f"{framing['direct']} of {framing['results']} results"
+    return stats
+
+
+def _stat_lines(summary: dict) -> list:
+    return [f"{label}: {text}  " for label, text in _stats(summary).items()] + ([""] if _stats(summary) else [])
 
 
 def render_report(summary: dict) -> str:
@@ -545,6 +646,7 @@ def render_report(summary: dict) -> str:
         f"Fixtures: pass {t['pass']}, warn {t['warn']}, fail {t['fail']}, skipped {t['skipped']} · "
         f"pairs failed: {summary['pairs_failed']}",
         "",
+        *_stat_lines(summary),
         "| Fixture | Status | Results | Approvals (mean) | Notes |",
         "|---|---|---|---|---|",
     ]
@@ -586,14 +688,19 @@ def render_compare(a: dict, b: dict):
             regressions.append(fid)
         elif sa == "fail" and sb in ("pass", "warn"):
             mark = "fixed"
-        elif sa != sb:
-            mark = "changed"
+        elif sa != sb and not {sa, sb} & {"skipped", "absent"}:
+            mark = "changed"  # a fixture only one run covers is not a change
         fmt = lambda e: "—" if not e or e["approvals_mean"] is None else f"{e['approvals_mean']}/3"
         lines.append(f"| {fid} | {sa} | {sb} | {fmt(ea)} | {fmt(eb)} | {mark} |")
     for pair in sorted(set(a.get("pairs", {})) & set(b.get("pairs", {}))):
         pa, pb = a["pairs"][pair]["status"], b["pairs"][pair]["status"]
         if pb == "fail" and pa == "pass":
             regressions.append(f"pair {pair}")
+    sa, sb = _stats(a), _stats(b)
+    if sa or sb:
+        lines += ["", "| | A | B |", "|---|---|---|"]
+        lines += [f"| {label} | {sa.get(label, '—')} | {sb.get(label, '—')} |"
+                  for label in dict.fromkeys(list(sa) + list(sb))]
     lines += ["", f"Regressions: {', '.join(regressions) if regressions else 'none'}"]
     return "\n".join(lines) + "\n", regressions
 
@@ -622,6 +729,11 @@ def cmd_results(args) -> int:
             print(f"error: {error}", file=sys.stderr)
         return 2
     summary = check_results(run_dir, fixtures)
+    if not summary["executions"]:
+        # Nothing to check, and writing a report would replace one that is
+        # kept there on purpose (evals/baseline/<version>/ holds only reports).
+        print(f"error: no runs of any fixture in {run_dir}", file=sys.stderr)
+        return 2
     report = render_report(summary)
     (run_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (run_dir / "report.md").write_text(report, encoding="utf-8")

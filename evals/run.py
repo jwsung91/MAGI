@@ -27,9 +27,12 @@ For another agent, pass the whole command with --cmd-json; "{prompt}",
 meta.json is skipped, so an interrupted run can be continued with the same
 --name.
 
-Every run is a full deliberation (framing plus three units), so the default
-of 18 fixtures x 3 runs uses a real amount of quota. Use --only and --runs 1
-while trying things out.
+Every execution is a full deliberation (framing plus three units), so the
+full set at 3 runs each uses a real amount of quota: the 1.5.0 baseline was
+60 executions for about $49. --smoke runs one fixture per kind of behaviour
+once, as a quick check that nothing broke; --only narrows a run by fixture,
+category or pair. What the agent reports as its cost is kept in meta.json
+and totalled by check.py.
 
 Standard library only.
 """
@@ -144,12 +147,16 @@ def _run_in(tmp: Path, fx: dict, k: int, run_dir: Path, command: list, timeout: 
     for sub in (result_dir, work_dir):
         shutil.copytree(sub, run_dir / sub.name, symlinks=True)
     results = sorted(p.name for p in (run_dir / "result").glob("*.json"))
+    stdout = (run_dir / "stdout.txt").read_text(encoding="utf-8", errors="replace")
     meta = {"fixture": fx["id"], "run": k, "exit_code": exit_code, "timed_out": timed_out,
-            "seconds": round(time.monotonic() - started, 1), "result_files": results}
+            "seconds": round(time.monotonic() - started, 1), "cost_usd": check.agent_cost(stdout),
+            "agent_error": check.agent_error(stdout), "result_files": results}
     # Written last: its presence marks the run as finished.
     (run_dir / "meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
     if timed_out:
         return f"timed out after {timeout}s"
+    if meta["agent_error"] and not results:
+        return f"agent error: {meta['agent_error']}"
     return f"{'result' if results else 'no result'} (exit {exit_code}, {meta['seconds']}s)"
 
 
@@ -164,7 +171,9 @@ def git_commit() -> str:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--name", help="run name (default: <skill version>-<timestamp>)")
-    parser.add_argument("--runs", type=int, default=3, help="executions per fixture (default 3)")
+    parser.add_argument("--runs", type=int, help="executions per fixture (default 3; 1 with --smoke)")
+    parser.add_argument("--smoke", action="store_true",
+                        help="only the fixtures marked \"smoke\": true, one run each unless --runs is given")
     parser.add_argument("--only", default="", help="comma-separated fixture ids, categories or pair names")
     parser.add_argument("--jobs", type=int, default=1, help="executions in parallel (default 1)")
     parser.add_argument("--timeout", type=int, default=1800, help="seconds per execution (default 1800)")
@@ -181,7 +190,16 @@ def main(argv=None) -> int:
         for error in errors:
             print(f"error: {error}", file=sys.stderr)
         return 2
+    if args.smoke:
+        fixtures = {fid: fx for fid, fx in fixtures.items() if fx.get("smoke")}
     fixtures = select(fixtures, args.only)
+    if not fixtures:
+        print("error: no fixtures selected", file=sys.stderr)
+        return 2
+    runs = args.runs if args.runs is not None else (1 if args.smoke else 3)
+    if runs < 1:
+        print("error: --runs must be at least 1", file=sys.stderr)
+        return 2
 
     if args.cmd_json:
         command = json.loads(args.cmd_json)
@@ -207,12 +225,12 @@ def main(argv=None) -> int:
     run_root.mkdir(parents=True, exist_ok=True)
     (run_root / "run.json").write_text(json.dumps({
         "name": name, "skill_version": version, "commit": git_commit(), "agent": command[0],
-        "command": command, "model": args.model, "runs": args.runs,
+        "command": command, "model": args.model, "runs": runs, "smoke": args.smoke,
         "started": datetime.now().astimezone().isoformat(timespec="seconds"),
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    jobs = [(fx, k) for fx in fixtures.values() for k in range(1, args.runs + 1)]
-    print(f"{len(fixtures)} fixtures x {args.runs} runs = {len(jobs)} executions -> {run_root}")
+    jobs = [(fx, k) for fx in fixtures.values() for k in range(1, runs + 1)]
+    print(f"{len(fixtures)} fixtures x {runs} runs = {len(jobs)} executions -> {run_root}")
 
     def work(job):
         fx, k = job

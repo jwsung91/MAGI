@@ -1,0 +1,19 @@
+{
+  "id": "split-framework-upgrade",
+  "category": "split",
+  "lang": "en",
+  "request": "Should we upgrade the web framework to the next major version in this sprint?",
+  "facts": [
+    "The major version we are on stops receiving security fixes in 14 months.",
+    "A spike branch on the new version passes 96% of the test suite; every remaining failure is in the session middleware, which one of the two listed breaking changes affects.",
+    "In the spike's benchmark, request handling is about 20% faster. Nobody has complained about speed.",
+    "The sprint holds one deliverable promised to a customer; doing the upgrade now moves it back by about a week. The customer has said a week's slip is acceptable but that they would rather not have it.",
+    "Two of the five engineers have asked for the upgrade for months: three libraries they want to use require the new version.",
+    "The upgrade is one pull request; reverting it restores the old version."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "split": true }
+  },
+  "note": "A trade-off written so that the three default perspectives have reasons to differ: the means works and is reversible, the cost is a slip the customer accepted reluctantly, and the need is the team's rather than a user's. No expected outcome; what is tracked is how often the units land on both sides."
+}
