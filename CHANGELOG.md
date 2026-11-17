@@ -2,6 +2,15 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.5.1]
+
+Fixes from the 1.5.0 eval baseline (60 runs in Claude Code, where subagents are available).
+
+- The framing agent frames every request wherever subagents can be launched. In 6 of 60 runs the moderator had framed the proposal itself; the Flow summary read as a free choice ("framing agent, or the moderator directly"), and the condition came only later. A short or clear-looking request is not a reason to skip the framing agent.
+- Self-check: a proposal the moderator framed although subagents can be launched is framed again by the framing agent, and the review is repeated from that result.
+- Result JSON in information mode leaves out `grade`, `grade_raised`, `verdict` and `approve_count`. One run had carried the framing's grade into a result with no vote.
+- Resolution rules and the result JSON format are unchanged (version 2).
+
 ## [1.5.0]
 
 - Proposal direction: approve is always the action that changes the current state. A request asked in the negative ("should we not add X?") is framed in its affirmative form, so the same votes no longer give a different result depending on how the question was worded. Removing something that exists is a different decision from not adding it.
