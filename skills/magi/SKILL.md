@@ -127,6 +127,15 @@ The framing agent chooses the preset (section 1). If the user specifies one, fol
 
 In every preset, custom perspectives included, a unit builds its verdict on its own perspective's question. A point that belongs to another unit's question goes under recommendations, not in the key rationale. Otherwise two units vote on the same argument and the majority is narrower than it looks.
 
+**What approve means.** A unit approves when the answer to its own question is yes. Weighing every gain against every cost is the tally's job, not one unit's. In the default preset:
+- MELCHIOR-1 approves if the means reaches the stated goal.
+- BALTHASAR-2 approves if, compared with the default, the cost and the loss if it fails are acceptable.
+- CASPER-3 approves if the stakeholders want the result.
+
+In other presets, each unit approves when its own perspective's question is answered yes.
+
+The options outside the binary are a reason for a verdict only for the unit whose question asks for a simpler way to the same goal (MELCHIOR-1 in the default preset). For the other units a better option is a recommendation, not a reason to reject.
+
 Each unit produces:
 - **Verdict:** approve / reject. There is no conditional verdict: the vote must commit. If the verdict depends on a condition, handle the condition before voting:
   - a fact that can be checked from sources → report it as a needed check; the moderator checks it and re-runs that unit once with the result;

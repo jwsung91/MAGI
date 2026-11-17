@@ -1,5 +1,5 @@
 {
   "name": "magi",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "Three-perspective majority deliberation: three independent reviews of one proposal, resolved by 2/3 majority or unanimity for critical items."
 }

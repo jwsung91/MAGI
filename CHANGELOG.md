@@ -2,6 +2,14 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.6.0]
+
+Draft for an experiment; not to be released as is. Each unit votes on its own perspective's question, so the three votes say which aspects hold and which do not.
+
+- A unit approves when the answer to its own question is yes; weighing every gain against every cost is left to the tally. In the default preset MELCHIOR-1 approves if the means reaches the stated goal, BALTHASAR-2 if the cost and the loss on failure are acceptable against the default, and CASPER-3 if the stakeholders want the result.
+- The options outside the binary are a reason for a verdict only for the unit that asks for a simpler way to the same goal (MELCHIOR-1 by default); for the others they are recommendations.
+- Framing keeps a goal the request states ("to make our pages faster") in the proposal sentence; an unstated goal is a premise or a question for the user.
+
 ## [1.5.2]
 
 From the per-unit vote experiment (#18), where this was the one change that worked on its own.
