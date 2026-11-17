@@ -2,6 +2,11 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.3.1]
+
+- No changes to the skill.
+- Releases now also include `magi-plugin-<version>.zip` for uploading MAGI as a plugin in ChatGPT or Codex: `.codex-plugin/plugin.json` and `skills/magi/` at the archive root, with readable file permissions. The existing `magi-<version>.zip` (skill folder at the root) stays for the Claude app.
+
 ## [1.3.0]
 
 - Runs outside Claude: added a Codex plugin manifest (`.codex-plugin/plugin.json`, marketplace in `.agents/plugins/marketplace.json`) and a Gemini CLI extension manifest (`gemini-extension.json`). Other agents that read the Agent Skills format can install `skills/magi` with `npx skills add`.

@@ -78,6 +78,10 @@ codex plugin marketplace add jwsung91/MAGI
 codex plugin add magi@jwsung91
 ```
 
+**ChatGPT (plugin upload)**
+
+Download `magi-plugin-<version>.zip` from the [latest release](https://github.com/jwsung91/MAGI/releases/latest) and upload it where ChatGPT accepts plugin ZIPs. The archive has `.codex-plugin/plugin.json` and `skills/magi/` at its root. ChatGPT has no subagents in a chat, so the units are written one at a time and the result says "Framing: moderator directly".
+
 **Gemini CLI (extension)**
 
 ```bash
