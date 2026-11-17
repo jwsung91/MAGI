@@ -16,10 +16,16 @@ Layout of a run:
     evals/out/<name>/<fixture>/run-<k>/work/           the agent's empty working folder
     evals/out/<name>/<fixture>/run-<k>/stdout.txt, stderr.txt, meta.json
 
+The agent itself runs in a temporary folder outside this repository, and
+result/ and work/ are copied here when it ends. Claude Code treats any file
+under the --plugin-dir tree as sensitive and denies Write there, even with
+--add-dir, so a results folder under evals/out/ cannot be written directly.
+
 The default command is Claude Code with this repository loaded as a plugin.
-For another agent, pass the whole command with --cmd-json; "{prompt}" and
-"{plugin_dir}" are filled in. A run that already has a meta.json is skipped,
-so an interrupted run can be continued with the same --name.
+For another agent, pass the whole command with --cmd-json; "{prompt}",
+"{plugin_dir}" and "{results_dir}" are filled in. A run that already has a
+meta.json is skipped, so an interrupted run can be continued with the same
+--name.
 
 Every run is a full deliberation (framing plus three units), so the default
 of 18 fixtures x 3 runs uses a real amount of quota. Use --only and --runs 1
@@ -34,6 +40,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -49,9 +56,11 @@ PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 
 # Web tools are denied so that a run depends only on the facts in the fixture.
 # Bash is needed for the progress log helper; the agent works in an empty folder.
+# The results folder sits outside that folder, so it is added with --add-dir.
 DEFAULT_COMMAND = [
     "claude", "-p", "{prompt}",
     "--plugin-dir", "{plugin_dir}",
+    "--add-dir", "{results_dir}",
     "--allowedTools", "Bash", "Read", "Write", "Agent", "Skill",
     "--disallowedTools", "WebSearch", "WebFetch",
     "--output-format", "json",
@@ -106,13 +115,21 @@ def run_once(fx: dict, k: int, run_root: Path, command: list, timeout: int, forc
         return "skipped (already run)"
     if run_dir.exists():
         shutil.rmtree(run_dir)
-    result_dir, work_dir = run_dir / "result", run_dir / "work"
-    result_dir.mkdir(parents=True)
+    run_dir.mkdir(parents=True)
+    with tempfile.TemporaryDirectory(prefix="magi-eval-") as tmp:
+        status = _run_in(Path(tmp), fx, k, run_dir, command, timeout)
+    return status
+
+
+def _run_in(tmp: Path, fx: dict, k: int, run_dir: Path, command: list, timeout: int) -> str:
+    result_dir, work_dir = tmp / "result", tmp / "work"
+    result_dir.mkdir()
     work_dir.mkdir()
 
     prompt = build_prompt(fx)
     (run_dir / "prompt.txt").write_text(prompt + "\n", encoding="utf-8")
-    argv = [part.replace("{prompt}", prompt).replace("{plugin_dir}", str(ROOT)) for part in command]
+    argv = [part.replace("{prompt}", prompt).replace("{plugin_dir}", str(ROOT))
+            .replace("{results_dir}", str(result_dir)) for part in command]
     env = dict(os.environ, MAGI_RESULTS_DIR=str(result_dir))
 
     started = time.monotonic()
@@ -124,7 +141,9 @@ def run_once(fx: dict, k: int, run_root: Path, command: list, timeout: int, forc
                                        stdout=out, stderr=err, timeout=timeout).returncode
         except subprocess.TimeoutExpired:
             timed_out = True
-    results = sorted(p.name for p in result_dir.glob("*.json"))
+    for sub in (result_dir, work_dir):
+        shutil.copytree(sub, run_dir / sub.name, symlinks=True)
+    results = sorted(p.name for p in (run_dir / "result").glob("*.json"))
     meta = {"fixture": fx["id"], "run": k, "exit_code": exit_code, "timed_out": timed_out,
             "seconds": round(time.monotonic() - started, 1), "result_files": results}
     # Written last: its presence marks the run as finished.

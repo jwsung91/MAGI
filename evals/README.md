@@ -89,7 +89,7 @@ python3 evals/check.py results evals/out/baseline-1.5.0
 
 Each execution is a full deliberation (framing plus three units, and a debate round on a critical split), so the full set uses a real amount of quota and time. `--only` takes fixture ids, categories or pair names; `--jobs` runs executions in parallel; a run that was interrupted continues where it stopped when started again with the same `--name`.
 
-The default agent is Claude Code (`claude -p`) with this repository loaded as a plugin through `--plugin-dir`, so the skill under test is the one in the working tree, not an installed copy. Bash, Read, Write, Agent and Skill are allowed and web tools are denied; the agent runs in an empty folder under `evals/out/`. To run another agent, give the whole command as a JSON list, with that agent's own flags; `{prompt}` and `{plugin_dir}` are filled in:
+The default agent is Claude Code (`claude -p`) with this repository loaded as a plugin through `--plugin-dir`, so the skill under test is the one in the working tree, not an installed copy. Bash, Read, Write, Agent and Skill are allowed and web tools are denied; the agent runs in an empty temporary folder outside the repository, with the results folder added through `--add-dir`, and both are copied to `evals/out/` when it ends. (Claude Code denies Write anywhere under the `--plugin-dir` tree as a sensitive file, so the results folder cannot live under `evals/out/` while the agent runs.) To run another agent, give the whole command as a JSON list, with that agent's own flags; `{prompt}`, `{plugin_dir}` and `{results_dir}` are filled in:
 
 ```bash
 python3 evals/run.py --name codex-trial --cmd-json '["codex", "exec", "{prompt}"]'
