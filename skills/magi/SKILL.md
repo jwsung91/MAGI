@@ -25,7 +25,7 @@ Why framing is separated from the moderator: how the proposal is worded and whic
 
 1. Gather facts (moderator, section 1).
 2. Frame the proposal (framing agent, or the moderator directly).
-3. **Ask the user, then stop.** If framing produced questions for the user, ask them all at once and end the turn there: do not deliberate in the same turn, and do not answer the questions yourself. This is the one point where the skill waits for the user, and it holds in every host, including hosts that usually proceed on reasonable assumptions. A request that can be read in more than one way, where the readings lead to different proposals (for example, "release" as declaring a stable 1.0 or as opening the current version to users), is a question for the user, not an assumption. Skip this step only when framing found no such question, or the user said to go ahead without questions.
+3. **Ask the user, then stop.** If framing produced questions for the user, ask them all at once and end the turn there: do not deliberate in the same turn, and do not answer the questions yourself. This is the one point where the skill waits for the user, and it holds in every host, including hosts that usually proceed on reasonable assumptions. A request that can be read in more than one way, where the readings lead to different proposals (for example, "release" as declaring a stable 1.0 or as opening the current version to users), is a question for the user, not an assumption. Skip this step only when framing found no such question, or the user said to go ahead without questions. If the host does not let you stop (it runs the skill as one uninterrupted task), do not settle the ambiguity silently: make each competing reading its own proposal, deliberate them separately, and list the questions you could not ask under **Additional information**, each with how its answer would change the outcome, so the user can answer and run MAGI again.
 4. Review by the three units (section 3).
 5. Resolve (section 4).
 6. Report in the output format (section 5). Nothing comes before the format except one short line and the result card, if one is drawn: no summary table and no verdict of the moderator's own.
@@ -246,7 +246,7 @@ Check each output in this order before ending the reply:
 3. The JSON result and the `final` progress event, if `MAGI_RESULTS_DIR` is set (sections 6 and 7).
 
 Then run this self-check on the Markdown result, and fix anything that fails before sending. It matters most when one agent wrote everything, because nothing else checked the units.
-- **Questions:** the user was asked before deliberation and answered, or framing found no question, or the user said to go ahead.
+- **Questions:** the user was asked before deliberation and answered, or framing found no question, or the user said to go ahead, or the host could not stop and the unasked questions are listed under Additional information with each competing reading deliberated as its own proposal.
 - **Framing line:** says "framing agent" only if a separate agent framed the proposal.
 - **Facts:** every fact a unit cites is in the list of facts; no personal detail about the user appears that is not in the list.
 - **Cells:** every verdict cell is approve, reject, or error, and every confidence cell is high, medium, or low (in the output language). No placeholder from the format is left as written ("...", "Follow-up 1" with no text after it).
