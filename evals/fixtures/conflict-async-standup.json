@@ -1,0 +1,17 @@
+{
+  "id": "conflict-async-standup",
+  "category": "conflict",
+  "lang": "en",
+  "request": "Should we replace the daily stand-up meeting with a written async update, to cut the time engineers spend in meetings?",
+  "facts": [
+    "For a four-week trial, the team of seven posted a written update in the team channel instead of meeting for the daily stand-up.",
+    "Calendar data shows time in meetings per engineer stayed at 6.5 hours a week during the trial, the same as in the four weeks before: the stand-up time went into ad-hoc calls instead.",
+    "The written update costs nothing, and going back means putting the meeting back on the calendar.",
+    "Six of the seven engineers want to keep the written update; they say they like reading it when it suits them. The seventh has no preference."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "grade": "normal", "units": {"melchior": "reject", "balthasar": "approve", "casper": "approve"}, "agenda_match": "meeting" }
+  },
+  "note": "Designed conflict, expected 2-1 passed: the goal is not reached, but the change is free and wanted. MELCHIOR-1: fact 2, meeting time did not go down, so reject. BALTHASAR-2: fact 3, no cost and easy to undo, so approve. CASPER-3: fact 4, so approve. Fact 1 is context. The goal is in the request, so agenda_match checks that the framing keeps it. Per-unit vote experiment (claude-opus-5-5): before, 1.5.1, two runs: passed 2-1 (as expected) and rejected 1-2 (BALTHASAR-2 rejecting); goal kept 2 of 2; unit votes 5 of 6. After, experiment branch: passed 2-1 in all three runs, exactly as expected; goal kept 3 of 3; unit votes 9 of 9. 1.5.1 already got this one mostly right, so the change here is not all the skill's. Control: change 3 of 3. Second round (experiment at fd6e11d: no debate round, one kind of fact per unit, grade by stated facts; three runs): passed 2-1 every time, normal, goal kept; unit votes 9 of 9 (round 1: 9 of 9). On 1.5.2 alone (two runs): passed 2-1 both times."
+}

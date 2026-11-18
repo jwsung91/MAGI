@@ -27,7 +27,10 @@ Subcommands:
 What is checked, in order of strictness:
   - schema and rules: hard. A result that breaks result.schema.json or the
     resolution rules (for example a normal proposal with 2/3 approvals that is
-    not 'passed') fails its fixture, whatever the fixture expects.
+    not 'passed') fails its fixture, whatever the fixture expects. The rules
+    are those of the run's skill version (run.json): before 1.6.0 a critical
+    split goes through a debate round and, still split, on hold; from 1.6.0 it
+    is rejected.
   - expect.must: every run has to meet it, or the fixture fails.
   - expect.should: reported as a rate; a miss is a warning, not a failure.
   - pairs: two fixtures that ask the same decision in opposite directions must
@@ -342,17 +345,37 @@ def unit_votes(units) -> list:
     return [(units.get(name) or {}).get("verdict") for name in UNIT_NAMES]
 
 
-def expected_verdict(grade: str, votes: list):
-    """The resolution SKILL.md section 4 gives for these final votes."""
+# From skill 1.6.0 a critical proposal passes only with three approvals and is
+# otherwise rejected: no debate round, no on hold. Earlier versions put a
+# critical split through a debate round and, still split, on hold.
+NO_DEBATE_FROM = (1, 6, 0)
+
+
+def debate_rules(skill_version) -> bool:
+    """Whether a run of this skill version used the debate round and on hold.
+    An unknown or unreadable version is taken as an earlier one."""
+    try:
+        parts = tuple(int(x) for x in str(skill_version).split(".")[:3])
+    except ValueError:
+        return True
+    return parts < NO_DEBATE_FROM
+
+
+def expected_verdict(grade: str, votes: list, debate: bool = True):
+    """The resolution SKILL.md section 4 gives for these final votes, under the
+    rules with the debate round (debate=True) or without it (1.6.0 on)."""
     approvals = votes.count("approve")
     if grade == "normal":
         return "passed" if approvals >= 2 else "rejected"
     if grade == "critical":
+        if not debate:
+            return "passed" if approvals == 3 else "rejected"
         return {3: "passed", 0: "rejected"}.get(approvals, "on_hold")
     return None
 
 
-def _check_proposal(label: str, proposal: dict, main: bool, problems: list, warnings: list) -> None:
+def _check_proposal(label: str, proposal: dict, main: bool, problems: list, warnings: list,
+                    debate: bool = True) -> None:
     grade, verdict = proposal.get("grade"), proposal.get("verdict")
     if "units" not in proposal:
         warnings.append(f"{label}: no per-unit verdicts")
@@ -375,13 +398,14 @@ def _check_proposal(label: str, proposal: dict, main: bool, problems: list, warn
     if grade is None:
         (problems if main else warnings).append(f"{label}: no grade")
         return
-    want = expected_verdict(grade, votes)
+    want = expected_verdict(grade, votes, debate)
     if verdict != want:
         problems.append(f"{label}: a {grade} proposal with {approvals}/3 approvals is {want!r}, got {verdict!r}")
 
 
-def check_rules(result: dict):
-    """Return (problems, warnings) for things the schema cannot express."""
+def check_rules(result: dict, debate: bool = True):
+    """Return (problems, warnings) for things the schema cannot express.
+    debate=False checks the 1.6.0 rules (see NO_DEBATE_FROM)."""
     problems, warnings = [], []
     units = result.get("units") if isinstance(result.get("units"), dict) else {}
     if result.get("mode") == "information":
@@ -397,16 +421,18 @@ def check_rules(result: dict):
         if key not in result:
             problems.append(f"main proposal: {key!r} is required in deliberation mode")
     if "verdict" in result:
-        _check_proposal("main proposal", result, True, problems, warnings)
+        _check_proposal("main proposal", result, True, problems, warnings, debate)
     if result.get("grade_raised") is True and result.get("grade") != "critical":
         problems.append("grade_raised is true but the grade is not critical")
-    if result.get("verdict") == "on_hold" and not str(result.get("debate", "")).strip():
+    if debate and result.get("verdict") == "on_hold" and not str(result.get("debate", "")).strip():
         # A critical split always opens a debate round before it can end on hold.
         problems.append("main proposal: on hold without a debate round record")
+    if not debate and str(result.get("debate", "")).strip():
+        warnings.append("a debate round is recorded, but this skill version has none")
     follow_ups = result.get("follow_ups")
     for i, follow_up in enumerate(follow_ups if isinstance(follow_ups, list) else [], 1):
         if isinstance(follow_up, dict):
-            _check_proposal(f"follow-up {i}", follow_up, False, problems, warnings)
+            _check_proposal(f"follow-up {i}", follow_up, False, problems, warnings, debate)
     return problems, warnings
 
 
@@ -470,7 +496,7 @@ def agent_error(stdout: str):
     return None
 
 
-def read_run(run_dir: Path, schema: dict, subagents: bool = False) -> dict:
+def read_run(run_dir: Path, schema: dict, subagents: bool = False, debate: bool = True) -> dict:
     """One execution of one fixture: its result (if any), what is wrong with
     it, and whether the run stopped to ask the user. With subagents=True, a
     result framed by the moderator directly is a warning: SKILL.md allows that
@@ -519,7 +545,7 @@ def read_run(run_dir: Path, schema: dict, subagents: bool = False) -> dict:
         return run
     run["result"] = result
     run["problems"].extend(f"schema: {e}" for e in validate_schema(result, schema, schema))
-    problems, warnings = check_rules(result)
+    problems, warnings = check_rules(result, debate)
     run["problems"].extend(problems)
     run["warnings"].extend(warnings)
     if subagents and MODERATOR_FRAMING_RE.search(str(result.get("framing", ""))):
@@ -672,12 +698,14 @@ def check_results(run_dir: Path, fixtures: dict) -> dict:
     # The default command allows the Agent tool, so the skill had subagents.
     # For another agent this is not known, and the framing check is skipped.
     subagents = "Agent" in (meta.get("command") or [])
+    # The resolution rules the run's skill version used.
+    debate = debate_rules(meta.get("skill_version"))
 
     evaluated = {}
     for fid, fx in fixtures.items():
         fixture_dir = run_dir / fid
         run_dirs = sorted(p for p in fixture_dir.glob("run-*") if p.is_dir()) if fixture_dir.is_dir() else []
-        evaluated[fid] = evaluate_fixture(fx, [read_run(p, schema, subagents) for p in run_dirs])
+        evaluated[fid] = evaluate_fixture(fx, [read_run(p, schema, subagents, debate) for p in run_dirs])
     pairs = evaluate_pairs(fixtures, evaluated)
     totals = Counter(e["status"] for e in evaluated.values())
     ran = [e for e in evaluated.values() if e["runs"]]

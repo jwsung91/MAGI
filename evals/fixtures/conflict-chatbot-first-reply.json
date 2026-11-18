@@ -1,0 +1,17 @@
+{
+  "id": "conflict-chatbot-first-reply",
+  "category": "conflict",
+  "lang": "ko",
+  "request": "고객 문의의 첫 응답 시간을 줄이려고, 챗봇이 문의에 먼저 답하게 할까?",
+  "facts": [
+    "한 달 동안 문의의 절반에 챗봇이 먼저 답하는 시범 운영을 했다.",
+    "시범 운영에서 챗봇이 먼저 답한 문의의 첫 응답 시간은 중간값 2분이었고, 상담원이 먼저 답한 문의는 중간값 3시간 10분이었다.",
+    "챗봇 비용은 월 15만 원으로 고객지원팀 예산 안에서 낼 수 있고, 설정에서 끄면 바로 원래대로 돌아간다.",
+    "시범 운영 뒤 설문에서 고객 응답자의 72%가 사람이 먼저 답하는 쪽을 원한다고 답했고, 상담원 6명 중 5명이 챗봇이 먼저 답하는 데 반대했다."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "grade": "normal", "units": {"melchior": "approve", "balthasar": "approve", "casper": "reject"}, "agenda_match": "첫 응답|응답 시간" }
+  },
+  "note": "Designed conflict in Korean, expected 2-1 passed with the dissent on CASPER-3: the means works and is cheap, but the people it serves do not want it. MELCHIOR-1: fact 2, first reply drops from hours to minutes, so approve. BALTHASAR-2: fact 3, affordable and switched off in the settings, so approve. CASPER-3: fact 4, customers and agents prefer a human first, so reject. Fact 1 is context. The goal is in the request, so agenda_match checks that the framing keeps it. Per-unit vote experiment (claude-opus-5-5): before, 1.5.1, two runs: rejected 0-3 both times; goal kept 0 of 2 (the proposal became 'turn the chatbot on for all inquiries'); unit votes 2 of 6. After, experiment branch: rejected 1-2, passed 2-1 (as expected), rejected 1-2; goal kept 3 of 3; unit votes 7 of 9. BALTHASAR-2 rejected in two runs on customer dissatisfaction and agents' trust, which it counted as losses that switching off does not undo; that reads fact 4, CASPER-3's, as a cost. Control: no_change 2 of 3. Second round (three runs): passed 2-1 (as designed), rejected 0-3, rejected 1-2; normal and goal kept every time; unit votes 6 of 9 (round 1: 7 of 9). BALTHASAR-2 rejected twice, again counting customers' and agents' dislike as a loss that switching off does not undo, which is CASPER-3's fact read as a cost; MELCHIOR-1 rejected once for lack of evidence that faster first replies help. One of two fixtures whose three outcomes differ. Control: no_change 2 of 3 (round 1 control)."
+}
