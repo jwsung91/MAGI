@@ -13,5 +13,5 @@
     "must": { "mode": "deliberation" },
     "should": { "grade": "normal", "units": {"melchior": "reject", "balthasar": "approve", "casper": "approve"}, "agenda_match": "meeting" }
   },
-  "note": "Designed conflict, expected 2-1 passed: the goal is not reached, but the change is free and wanted. MELCHIOR-1: fact 2, meeting time did not go down, so reject. BALTHASAR-2: fact 3, no cost and easy to undo, so approve. CASPER-3: fact 4, so approve. Fact 1 is context. The goal is in the request, so agenda_match checks that the framing keeps it."
+  "note": "Designed conflict, expected 2-1 passed: the goal is not reached, but the change is free and wanted. MELCHIOR-1: fact 2, meeting time did not go down, so reject. BALTHASAR-2: fact 3, no cost and easy to undo, so approve. CASPER-3: fact 4, so approve. Fact 1 is context. The goal is in the request, so agenda_match checks that the framing keeps it. Per-unit vote experiment (claude-opus-5-5): before, 1.5.1, two runs: passed 2-1 (as expected) and rejected 1-2 (BALTHASAR-2 rejecting); goal kept 2 of 2; unit votes 5 of 6. After, experiment branch: passed 2-1 in all three runs, exactly as expected; goal kept 3 of 3; unit votes 9 of 9. 1.5.1 already got this one mostly right, so the change here is not all the skill's. Control: change 3 of 3."
 }
