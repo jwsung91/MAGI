@@ -9,7 +9,7 @@ Nothing here is part of the skill: `evals/` is not in any release zip, and chang
 | Check | Strictness | What it catches |
 |---|---|---|
 | Result schema | fails the fixture | A result JSON that does not match [`result.schema.json`](../skills/magi/result.schema.json) |
-| Resolution rules | fails the fixture | A resolution that does not follow from the votes: a critical proposal passed by 2/3, a normal proposal on hold, a unit error outvoted, `approve_count` that disagrees with the units, on hold with no debate record |
+| Resolution rules | fails the fixture | A resolution that does not follow from the votes: a critical proposal passed by 2/3, a normal proposal on hold, a unit error outvoted, `approve_count` that disagrees with the units, on hold with no debate record. The rules are those of the run's skill version (`run.json`): from 1.6.0 a critical split is rejected and on hold is wrong |
 | `expect.must` | fails the fixture unless every run meets it | Mode, grade or outcome on cases where only one answer is defensible |
 | `expect.should` | warning | Things that are likely but arguable; reported as a rate |
 | Framing | warning | A result framed by the moderator directly when the agent had subagents (the default command allows the Agent tool). `SKILL.md` allows that only when subagents are not available |

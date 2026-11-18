@@ -162,6 +162,34 @@ class RuleTests(unittest.TestCase):
         self.assertEqual(check.expected_verdict("critical", [a, a, r]), "on_hold")
         self.assertEqual(check.expected_verdict("critical", [r, r, r]), "rejected")
 
+    def test_rules_from_1_6_0_have_no_debate_round(self):
+        a, r = "approve", "reject"
+        self.assertEqual(check.expected_verdict("critical", [a, a, r], debate=False), "rejected")
+        self.assertEqual(check.expected_verdict("critical", [a, a, a], debate=False), "passed")
+        self.assertEqual(check.expected_verdict("normal", [a, a, r], debate=False), "passed")
+        split = result("critical", (a, a, r))                        # on hold with a debate record
+        self.assertEqual(self.problems(split), [])
+        self.assertTrue(check.check_rules(split, debate=False)[0])    # 1.6.0: should be rejected
+        new = result("critical", (a, a, r), verdict="rejected")
+        del new["debate"]  # result() adds one for the on hold it computes under the earlier rules
+        self.assertEqual(check.check_rules(new, debate=False), ([], []))
+        self.assertTrue(self.problems(new))                           # before 1.6.0: should be on hold
+        self.assertIn("a debate round is recorded, but this skill version has none",
+                      check.check_rules(dict(new, debate="one round"), debate=False)[1])
+
+    def test_rules_follow_the_run_skill_version(self):
+        for version, debate in (("1.5.2", True), ("1.6.0", False), ("2.0.1", False), (None, True), ("x", True)):
+            self.assertEqual(check.debate_rules(version), debate, version)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            res = result("critical", ("approve", "approve", "reject"), verdict="rejected")
+            del res["debate"]
+            write_run(root, "f", 1, res)
+            fx = {"f": fixture("f", must={"mode": "deliberation"})}
+            for version, status in (("1.5.1", "fail"), ("1.6.0", "pass")):
+                (root / "run.json").write_text(json.dumps({"skill_version": version}), encoding="utf-8")
+                self.assertEqual(check.check_results(root, fx)["fixtures"]["f"]["status"], status, version)
+
     def test_majority_does_not_pass_a_critical_proposal(self):
         self.assertTrue(self.problems(result("critical", ("approve", "approve", "reject"), verdict="passed")))
 
