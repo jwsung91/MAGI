@@ -23,15 +23,19 @@ The agent that frames the proposal is separate from the one that summarizes the 
 | Grade | Criteria | Rule |
 |---|---|---|
 | Normal | Reversible, limited impact | Passes with 2/3 approval |
-| Critical | Hard to reverse, or affects safety, security, data, or significant cost | Passes only if unanimous; on a split, one debate round and a revote; still split → on hold |
+| Critical | Hard to reverse, or affects safety, security, data, or significant cost | Passes only if all three approve; otherwise rejected |
 
 - Every vote is a plain approve or reject; there is no conditional approval. A condition is settled before the vote (checked as a fact, asked of the user, or proposed as a modified version), and advice for carrying out the decision is kept as a non-binding recommendation.
 - Approve always means the change from the current state, so a question asked in the negative ("should we not add X?") gets the same result as its affirmative form. The result names the default (what happens if the proposal does not pass) and marks it when the default is itself harmful.
 - If any unit objects to the grade, the item is raised to critical.
-- In the debate round, every unit, majority as well as minority, must answer the other side's strongest argument. A unit may change position only by citing an argument another unit raised in the first round that it had not already weighed itself; the moderator checks this, and a change that fails keeps the unit's first-round verdict.
+- There is no debate round and no "on hold" (from 1.6.0). A resolution that is not unanimous names the unit in the minority and its reason on the resolution line, and a rejection whose default is itself costly says that not passing is also a choice.
 - If a unit fails, the other two do not vote alone; the result is reported as an **error**.
 - When all three agree, shared premises and missing alternatives are checked once more.
 - Questions that cannot be answered with approve/reject go to **information** mode: each perspective answers, with no vote.
+
+### What a resolution means
+
+Each unit votes on its own perspective's question only: MELCHIOR-1 on whether the means reaches the stated goal, BALTHASAR-2 on whether the cost and the loss if it fails are acceptable against the default, CASPER-3 on whether the people affected want the result. The resolution counts those three answers. A pass means two or three aspects hold (all three for a critical proposal), not that the proposal is best on balance; how much the failing aspect weighs is yours to judge, and the resolution line says which aspect failed and why. Results from before 1.6.0, when units weighed the whole decision, are not directly comparable.
 
 ## Presets
 

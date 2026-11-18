@@ -48,7 +48,7 @@
 
     <rect x="160" y="372" width="440" height="76" rx="8" fill="#fef2f2" stroke="#ef4444"/>
     <text x="380" y="396" fill="#7f1d1d" font-weight="600">Resolution</text>
-    <text x="380" y="416" fill="#991b1b" font-size="12">Normal: 2/3 majority · Critical: unanimity (one debate round on split)</text>
-    <text x="380" y="434" fill="#991b1b" font-size="12">Passed · Rejected · On hold · Error · Info</text>
+    <text x="380" y="416" fill="#991b1b" font-size="12">Normal: 2/3 majority · Critical: all three approve</text>
+    <text x="380" y="434" fill="#991b1b" font-size="12">Passed · Rejected · Error · Info</text>
   </g>
 </svg>

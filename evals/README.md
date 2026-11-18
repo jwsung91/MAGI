@@ -53,12 +53,12 @@ Checks available under `must` and `should`:
 |---|---|---|
 | `mode` | `deliberation` / `information` | the result's mode matches |
 | `grade` | `normal` / `critical` | the main proposal's grade matches |
-| `outcome` | `change` / `no_change` | `change`: the resolution is passed. `no_change`: rejected or on hold. Approve is always the change, so this is what happens to the current state |
-| `verdict` | list of resolutions | the resolution is one of them (use `outcome` unless the difference between rejected and on hold matters) |
+| `outcome` | `change` / `no_change` | `change`: the resolution is passed. `no_change`: rejected, or on hold in results before 1.6.0. Approve is always the change, so this is what happens to the current state |
+| `verdict` | list of resolutions | the resolution is one of them (use `outcome` unless the difference between rejected and on hold matters; on hold appears only before 1.6.0) |
 | `split` | `true` / `false` | the three units did (not) vote on both sides |
 | `follow_ups_min` | 0–2 | at least that many follow-up proposals |
 | `agenda_match`, `agenda_not_match`, `preset_match` | regex, case-insensitive | the text does (not) match. For the agenda, quoted text (`'…'`, `"…"`, `“…”`, `「…」`, backticks) and parenthetical notes (`(…)`) are left out first, so a note that cites the original question or spells out what the vote means does not count as the proposal |
-| `units` | object, e.g. `{"melchior": "reject", "balthasar": "approve"}` | each unit listed cast that final vote (after a debate round, if there was one). Any subset of the three units; used by the `conflict` fixtures, in `should` |
+| `units` | object, e.g. `{"melchior": "reject", "balthasar": "approve"}` | each unit listed cast that final vote (after a debate round, in results before 1.6.0). Any subset of the three units; used by the `conflict` fixtures, in `should` |
 | `asks_questions` | `true` | the run stopped to ask: no result file, and the progress log shows a framing with questions and no `final` event. Needs `interaction: "ask"` and cannot be combined with other checks |
 
 The current set:
@@ -71,7 +71,7 @@ The current set:
 | `information` | 1 | Does an open question stay a question instead of a vote? |
 | `pressure` | 2 | Does "the CTO decided" or "eight months already spent" move the result? |
 | `split` | 2 | On a trade-off, do the three perspectives actually disagree? These have no expected outcome; what is tracked is how often the units vote on both sides. One is a personal decision, so it also shows whether that preset is chosen |
-| `conflict` | 5 | Designed conflicts: each fact answers one unit's question in a clear direction, so every unit has an expected vote (`units`), and the fixtures differ in pattern (2-1 passed with the dissent on each unit in turn, 1-2 rejected, a critical split that should end on hold). Where the request states a goal, `agenda_match` checks that the framing kept it in the proposal. One is in Korean |
+| `conflict` | 5 | Designed conflicts: each fact answers one unit's question in a clear direction, so every unit has an expected vote (`units`), and the fixtures differ in pattern (2-1 passed with the dissent on each unit in turn, 1-2 rejected, a critical proposal rejected at 2/3). Where the request states a goal, `agenda_match` checks that the framing kept it in the proposal. One is in Korean |
 | `questions` | 2 | Does an ambiguous request end the turn on a question, and fall back properly when nobody can answer? |
 
 When adding a fixture, put under `must` only what you would call a bug if it came out otherwise.
@@ -96,7 +96,7 @@ python3 evals/check.py results evals/out/baseline-1.5.0
 
 `check.py results` prints a report, writes `report.md` and `summary.json` into the run folder, and exits 1 if a fixture or a pair failed.
 
-Each execution is a full deliberation (framing plus three units, and a debate round on a critical split), so a run costs real quota and time: the 1.5.0 baseline was 60 executions for about $49, roughly $0.80 each. Which run to use:
+Each execution is a full deliberation (framing plus three units; before 1.6.0 also a debate round on a critical split), so a run costs real quota and time: the 1.5.0 baseline was 60 executions for about $49, roughly $0.80 each. Which run to use:
 
 | Run | Executions | For |
 |---|---|---|
@@ -133,7 +133,7 @@ python3 evals/check.py control evals/out/control-1 evals/out/baseline-1.5.0 eval
 
 `--control` asks each deliberation fixture (not information mode, not the ones that should stop to ask) the same request and facts once, with no skill: Claude Code runs with `--safe-mode --tools "" --strict-mcp-config`, so no installed plugin, skill, CLAUDE.md, MCP server or tool takes part. The prompt asks for `DECISION: change` or `DECISION: no_change`, and defines change as the action that changes the current state, so that a question asked in the negative ("should we not add X?") still answers in the same direction as MAGI, whose approve is always the change. The answer goes in each run's `meta.json`.
 
-`check.py control` puts the control answers next to the majority outcome of the MAGI runs given (passed is change; rejected and on hold are no_change) and ends with one line: on how many fixtures the control agreed with MAGI. A MAGI run counts for a fixture only if its `prompt.txt` matches the fixture's current request and facts, so runs made with an earlier version of a fixture are left out on their own. It writes `control.md` and `control.json` into the control folder. Agreement on nearly every fixture means that, on this set, the three units add no decision information over asking once; it says nothing about the reasons and recommendations MAGI also gives.
+`check.py control` puts the control answers next to the majority outcome of the MAGI runs given (passed is change; rejected, and on hold before 1.6.0, are no_change) and ends with one line: on how many fixtures the control agreed with MAGI. A MAGI run counts for a fixture only if its `prompt.txt` matches the fixture's current request and facts, so runs made with an earlier version of a fixture are left out on their own. It writes `control.md` and `control.json` into the control folder. Agreement on nearly every fixture means that, on this set, the three units add no decision information over asking once; it says nothing about the reasons and recommendations MAGI also gives.
 
 ## Comparing two versions of the skill
 

@@ -14,7 +14,7 @@ Take every value from the same result the Markdown and JSON come from. Field nam
 
 **Header**
 - `agenda` (the main proposal), with `grade` and `preset` as a small caption above it.
-- Resolution badge on the right: `verdict` (passed / rejected / on hold / error), with `approve_count`/3 below it. If a debate round was held, add "debate: 1 round".
+- Resolution badge on the right: `verdict` (passed / rejected / error), with `approve_count`/3 below it. If a critical proposal was rejected with 1 or 2 approvals, add "critical: needs all three" under the count, so two approve tiles next to a rejected badge do not read as a mistake.
 
 **Three unit tiles, side by side, in the order MELCHIOR-1, BALTHASAR-2, CASPER-3**
 - Unit name, `perspective`, and the verdict (approve / reject / error). Fill the whole tile with the verdict's color, with the matching text color (see Look). Do not show confidence on the tile.
@@ -34,7 +34,7 @@ Take every value from the same result the Markdown and JSON come from. Field nam
 
 - Neutral and flat: plain rounded cards on the host's surfaces, thin borders, no gradients or shadows.
 - Use the host's theme variables so it works in light and dark mode.
-- Colors carry meaning only. Unit tiles: approve = blue, reject = red, error = gray with the error text shown. Resolution badge: passed = green, rejected = red, on hold = yellow, error = red. Everything else, including the card background, stays neutral.
+- Colors carry meaning only. Unit tiles: approve = blue, reject = red, error = gray with the error text shown. Resolution badge: passed = green, rejected = red, error = red. Everything else, including the card background, stays neutral.
 - Set these colors inline on each element, never only in a `<style>` block, and never by mixing host variables, which may not render. Use the host's role variable with a fixed fallback, so the color shows even where the variable is missing:
 
   | Meaning | Fill | Text |
@@ -42,7 +42,6 @@ Take every value from the same result the Markdown and JSON come from. Field nam
   | Approve | `var(--bg-accent, #E6F1FB)` | `var(--text-accent, #185FA5)` |
   | Reject, rejected | `var(--bg-danger, #FCEBEB)` | `var(--text-danger, #A32D2D)` |
   | Passed | `var(--bg-success, #EAF3DE)` | `var(--text-success, #3B6D11)` |
-  | On hold | `var(--bg-warning, #FAEEDA)` | `var(--text-warning, #854F0B)` |
   | Error (unit) | `var(--surface-1, #F1EFE8)` | `var(--text-secondary, #5F5E5A)` |
 
   The selected tile's border uses its own text color.

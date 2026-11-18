@@ -4,14 +4,21 @@ The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versi
 
 ## [1.6.0]
 
-Draft for an experiment; not to be released as is. Each unit votes on its own perspective's question, so the three votes say which aspects hold, and a split resolves without a debate round.
+**What a resolution means has changed.** Each unit now votes on its own perspective's question only, and the resolution counts those answers. A pass means two of the three aspects hold on a normal proposal, and all three on a critical one; it no longer means "best on balance". How much the failing aspect weighs is the user's to judge, and the resolution line names it. Results from earlier versions, where each unit weighed the whole decision, cannot be compared with these directly.
 
-- A unit approves when the answer to its own question is yes; weighing every gain against every cost is left to the tally. In the default preset MELCHIOR-1 approves if the means reaches the stated goal, BALTHASAR-2 if the cost and the loss on failure are acceptable against the default, and CASPER-3 if the stakeholders want the result.
-- One kind of fact per unit in the default preset: reaching the goal and simpler ways to it (MELCHIOR-1); money, time, risk, reversibility, savings and the cost of the default (BALTHASAR-2); whether the people affected want the result (CASPER-3). "Who gets hurt" and "what they gain" leave the table.
+- A unit approves when the answer to its own question is yes; weighing every gain against every cost is left to the tally. In the default preset MELCHIOR-1 approves if the means reaches the stated goal, BALTHASAR-2 if the cost and the loss on failure are acceptable against the default, and CASPER-3 if the people affected want the result.
+- One kind of fact per unit in the default preset: reaching the goal and simpler ways to it (MELCHIOR-1); money, time, risk, reversibility, savings and the cost of the default (BALTHASAR-2); whether the people affected want the result (CASPER-3).
 - The options outside the binary are a reason for a verdict only for the unit that asks for a simpler way to the same goal (MELCHIOR-1 by default); for the others they are recommendations.
 - A critical proposal passes only with all three approvals and is otherwise rejected. The debate round and on hold are gone. A resolution that is not unanimous names the minority unit and its reason; a rejection whose default is harmful or costly says that not passing is also a choice.
 - The grade follows what the facts say about reversibility and impact: a change the facts say reverts cleanly is not critical only because it reaches production; the default makes a proposal critical only when its harm is hard to reverse or severe, not for an ongoing cost; an unstated term is an assumption, not a reason to raise the grade.
-- The result JSON format is unchanged (version 2). `on_hold` and `debate` stay in the schema for earlier results and are no longer written.
+- The result JSON format is unchanged (version 2). `on_hold` and `debate` stay in the schema for earlier results and are no longer written. The result card no longer has an on-hold badge, and a critical rejection with one or two approvals says that all three were needed.
+
+Evidence (second round of the experiment, claude-opus-5-5, five designed-conflict fixtures x 3 and 15 regression fixtures x 1): designed conclusion in 12 of 15 conflict runs, unit votes as designed in 37 of 45, expected grade in 15 of 15, and no change in the outcome of any clear-cut case.
+
+Known limits:
+- A 2-1 result is one vote from the other outcome: in the experiment, running the same request again gave a different conclusion about one time in five.
+- A fact on the border of two perspectives (for example, people's dislike of a change) may be counted by a different unit from run to run.
+- Verified only in Claude Code with subagents.
 
 ## [1.5.2]
 
