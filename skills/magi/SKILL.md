@@ -87,11 +87,18 @@ Takes the original request, the list of facts, and (if any) the user-specified p
 | Grade | Criteria | Resolution rule |
 |---|---|---|
 | Normal | Reversible and limited in impact | 2/3 majority |
-| Critical | Hard to reverse, or affects safety, security, data loss, production environments, or large costs | Passes if unanimous (rejected if all reject; on a split, one debate round then a revote; still split → on hold) |
+| Critical | Hard to reverse, or affects safety, security, data loss, production environments, or large costs | Passes only if all 3 approve; otherwise rejected |
 
 The framing agent decides the grade and gives a one-line reason. When in doubt, treat it as critical. Either side can make a proposal critical: the action, or the default if the proposal does not pass.
 
-A thought experiment or discussion question, where nothing will actually be carried out, is **normal** even if its subject is life or safety. The critical grade exists to stop irreversible actions; applied to a question with no action, it mostly turns splits into "on hold" without protecting anyone.
+The grade follows what the facts say about how reversible the action is and how large its impact is:
+- A change the facts say can be undone (a pull request that reverts cleanly, a setting that can be switched off) is not critical only because it reaches production.
+- The default makes a proposal critical only when its harm is itself hard to reverse or severe (data lost, a vulnerability left open, a deadline missed for good). An ongoing cost, or a risk that can still be dealt with later, does not.
+- "When in doubt" is doubt about what the facts say. A term the facts do not state (a contract length, a billing period) is an [assumption] under premises; grade on the stated facts.
+
+None of this lowers a proposal that really is hard to reverse or large in impact.
+
+A thought experiment or discussion question, where nothing will actually be carried out, is **normal** even if its subject is life or safety. The critical grade exists to stop irreversible actions; applied to a question with no action, it mostly turns splits into rejections without protecting anyone.
 
 ## 3. Independent review by the three units
 
@@ -104,10 +111,10 @@ Independence is the core.
 | Unit | Perspective | Main questions |
 |---|---|---|
 | **MELCHIOR-1** (scientist) | Technical feasibility | Is the evidence right? Does it work, and does it reach the stated goal? Complexity, performance, correctness? Is there a technically simpler way to the same goal? |
-| **BALTHASAR-2** (guardian) | Risk and cost | What is lost if it fails or sits unused? Can it be reversed? What does it cost to carry: money, time, upkeep, opportunity? Who gets hurt? |
-| **CASPER-3** (human) | Needs and value | Is the goal what the user and stakeholders really want? What do motivation and intuition say? What do they gain if it works? |
+| **BALTHASAR-2** (guardian) | Risk and cost | What is lost if it fails or sits unused? Can it be reversed? What does it cost to carry: money, time, upkeep, opportunity? What does the default cost, and what does the change save? |
+| **CASPER-3** (human) | Needs and value | Do the people affected by the result (the user, stakeholders, the people who will live with it) want it? What do motivation and intuition say? |
 
-The three questions are kept apart: MELCHIOR-1 asks whether the means reaches the stated goal, BALTHASAR-2 what it costs and what is lost if it goes wrong, CASPER-3 whether the goal itself is wanted and what is gained.
+The three questions are kept apart, one kind of fact to each: whether the means reaches the stated goal, and whether a simpler way reaches it, is MELCHIOR-1's; money, time, risk, reversibility, savings and the cost of the default are BALTHASAR-2's; whether the people affected want the result is CASPER-3's.
 
 ### Presets
 
@@ -165,25 +172,16 @@ Decide in this order.
 3. **Grade objection:** if even one unit raised a grade objection on a normal proposal, raise it to critical and resolve accordingly (the "when in doubt, critical" principle).
 4. **Vote:** count approvals. Follow-up proposals are resolved separately by the same rules.
    - Normal proposal: 2 or more approvals → **passed**; otherwise **rejected**.
-   - Critical proposal: all 3 approve → **passed**; all 3 reject → **rejected**; a split opens a debate round.
-5. **Debate round (only when a critical proposal is split):** show each unit its own round-1 output and the other two units' full round-1 outputs (verdict, key rationale, what would flip the verdict, doubted premise, recommendations), and let it give a verdict once more. Debate is limited to 1 round. Each debate prompt also includes the input isolation instruction (section 1).
-   - **Every unit answers the other side.** Each unit, majority as well as minority, names the strongest argument of each unit that voted the other way and either rebuts it or concedes it, saying whether that changes its verdict. Leaving an argument unanswered is not a rebuttal. Without this rule only the minority unit has to deal with opposing arguments, while the majority keeps its position without engaging, so the pressure to move falls on one side only.
-   - To change position, a unit must cite a **new argument** raised by another unit: quote it, name the unit it came from, and say why it changes the verdict. "Because the majority saw it that way" is not an argument. This prevents conformity pressure from breaking independence.
-   - **The moderator checks every position change.** This is a check of traceability, not of merit: the moderator does not judge whether the argument is persuasive. A change is accepted only if both hold:
-     1. the cited argument appears, in substance, in the named unit's round-1 output (an argument that first appears in round 2 fails this);
-     2. it does not already appear in the changing unit's own round-1 output (an argument the unit had already weighed when it voted is not new to it).
-
-     If a change fails, re-run that unit once, stating which condition failed. If it fails again, the change is not accepted: the unit's round-1 verdict stands, and the result records the rejected change and the reason. Do not rewrite the unit's output to make it pass.
-   - A unit that keeps its position needs no check, but its rebuttals and concessions are recorded.
-   - If the revote is still split, the result is **on hold** (until the rejecting unit's concerns are resolved).
-   - **What on hold means:** on hold is not a verdict that the proposal is wrong, and "do nothing" is not its default answer. For a real action, it means the action is not carried out until the rejecting unit's concerns are resolved. If the default is itself harmful or hard to reverse, say with the resolution that leaving it on hold is also a choice, and by when it has to be made if that is known. For a question with nothing to carry out, it means no conclusion: present each position side by side.
+   - Critical proposal: all 3 approve → **passed**; otherwise **rejected**. There is no debate round and no on hold: the units answer different questions, so a second round gives a unit no reason of its own to move.
+5. **Resolution line:** a resolution that is not unanimous names, whatever the grade, the unit or units in the minority and the reason in one phrase, e.g. "rejected (approve 2/3; a critical proposal needs all three. Against: BALTHASAR-2, the logs are the only record)".
+   - If a proposal is rejected and its default is itself harmful or costly, say with the resolution that not passing it is also a choice, and by when it has to be made if that is known.
 - **Unanimity check:** if all three units reached the same conclusion (all approve or all reject), suspect that they share the same blind spot because they come from the same model, check the following two points, and record the result. Record both points every time, writing "none found" for a point with nothing to report; this applies to follow-up proposals that were unanimous as well.
   1. **Shared premise:** do all three units' judgments rest on the same premise? Especially if it is an assumption filled in by the framing agent, state whether the resolution would flip if that premise were wrong.
   2. **Missing alternative:** by treating the proposal only as "do it or not", did the units miss options in between (a reduced version, phased adoption, a different method)? Compare with the framing agent's "options outside the binary", and reflect anything the units did not address in the next actions.
 
 ## 5. Output format
 
-Use the format below as it is, with the headings in this order and none merged. A heading marked "(if any)", "(if held)" or "(if applicable)" is left out when it does not apply; every other heading is required. Anything beyond it (an action plan, extra tables, research notes) goes after the format, under its own heading, so the user can tell the deliberation result from the moderator's additions.
+Use the format below as it is, with the headings in this order and none merged. A heading marked "(if any)" or "(if applicable)" is left out when it does not apply; every other heading is required. Anything beyond it (an action plan, extra tables, research notes) goes after the format, under its own heading, so the user can tell the deliberation result from the moderator's additions.
 
 ```
 ## MAGI Deliberation Result
@@ -204,10 +202,10 @@ Use the format below as it is, with the headings in this order and none merged. 
 | BALTHASAR-2 | Reject | Medium | ... | ... |
 | CASPER-3 | Approve | Medium | ... | ... |
 
-**Resolution:** passed / rejected / on hold / error (approve n/3) — the outcome in plain words (what is done or not done), answering the question as the user asked it
+**Resolution:** passed / rejected / error (approve n/3; if not unanimous, the minority unit and its reason) — the outcome in plain words (what is done or not done), answering the question as the user asked it; if rejected with a harmful or costly default, that not passing is also a choice
 **Follow-up resolutions:** (if any) for each follow-up proposal, its resolution line and a per-unit table, so the user can see why each unit voted as it did:
 
-**Follow-up 1:** (follow-up text) — normal / critical — passed / rejected / on hold (approve n/3)
+**Follow-up 1:** (follow-up text) — normal / critical — passed / rejected (approve n/3; if not unanimous, the minority unit and its reason)
 
 | Unit | Verdict | Confidence | Key rationale |
 |---|---|---|---|
@@ -216,7 +214,6 @@ Use the format below as it is, with the headings in this order and none merged. 
 | CASPER-3 | Approve | ... | ... |
 
 **Recommendations:** (if any, per unit; non-binding. If units recommend modified versions of the proposal, list them as candidates for a separate decision without merging them)
-**Debate round:** (if held) for each unit: its round-2 verdict; its answer to each opposing unit's strongest argument (rebutted / conceded, one line); if it changed position, the argument it cited (source unit, quote) and whether the moderator's check accepted the change, with the reason if not. If no one changed, say so.
 
 **Unanimity check:** (if applicable) shared premise, missing alternative
 
@@ -264,7 +261,7 @@ Check the result once it is tallied and before any of it is shown, so the card, 
 - **Direction:** approve is the change from the current state and the default is stated; for a request asked in the negative, the resolution says what it means for the question as asked.
 - **Facts:** every fact a unit cites is in the list of facts; no personal detail about the user appears that is not in the list.
 - **Cells:** every verdict is approve, reject, or error, and every confidence is high, medium, or low (in the output language). No placeholder from the format is left as written ("...", "Follow-up 1" with no text after it).
-- **Debate round (if held):** every unit, majority and minority, answered each opposing unit's strongest argument.
+- **Resolution line:** a resolution that is not unanimous names the minority unit and its reason.
 - **Unanimity check (if any proposal was unanimous):** both points are recorded.
 - **Limitations line:** says how the units were actually run.
 - **Language:** headings, labels, and verdict words are in the output language; only the unit names stay in English.
@@ -301,8 +298,8 @@ mode: "deliberation" | "information"
 agenda: main proposal (or the question)
 grade: "normal" | "critical"            (deliberation)
 grade_raised: true if raised by a grade objection
-preset, framing, debate, minority: text (optional)
-verdict: "passed" | "rejected" | "on_hold" | "error"   (deliberation)
+preset, framing, minority: text (optional)
+verdict: "passed" | "rejected" | "error"   (deliberation; the schema keeps "on_hold" and `debate` for results of earlier versions, and this version writes neither)
 approve_count: 0-3
 follow_ups: [{agenda, grade, verdict, approve_count, units}]  (at most 2)
   units: {melchior, balthasar, casper}, each: verdict, confidence, rationale (at most 3)
@@ -339,7 +336,7 @@ Where the agent can run shell commands and `MAGI_RESULTS_DIR` is set, also recor
   | `facts_gathered` | after gathering facts | `facts` |
   | `framing_done` | after framing (again after re-framing) | `mode`, `agenda`, `follow_ups`, `grade`, `preset`, `questions` |
   | `questions_answered` | after the user answers | `answers` |
-  | `units_started` | before running the units | `round` (1, or 2 for debate) |
+  | `units_started` | before running the units | `round` (always 1) |
   | `units_done` | when the units' results arrive (all three at once) | `round`, and per unit `verdict` and `confidence`; in round 2 also `changed` and, if changed, `change_accepted` |
   | `final` | at the end | `result`: the full version 2 result object |
   | `error` | on failure | `stage`, `message` |
