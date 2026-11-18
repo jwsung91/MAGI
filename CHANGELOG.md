@@ -2,6 +2,13 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.5.2]
+
+From the per-unit vote experiment (#18), where this was the one change that worked on its own.
+
+- Framing keeps a goal the request states ("to make our pages faster") in the proposal sentence. In the experiment's runs on 1.5.1 the goal was dropped from the proposal in 8 of 11 runs where the request stated one, which left the technical unit nothing to measure the means against; with this rule it stayed in 15 of 15. A request with no stated goal is unchanged: the goal is a premise, or a question for the user when only the user can answer it and it could decide the outcome.
+- Resolution rules, grades and the result JSON format are unchanged (version 2).
+
 ## [1.5.1]
 
 Fixes from the 1.5.0 eval baseline (60 runs in Claude Code, where subagents are available).
