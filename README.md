@@ -27,10 +27,11 @@ The agent that frames the proposal is separate from the one that summarizes the 
 
 - Every vote is a plain approve or reject; there is no conditional approval. A condition is settled before the vote (checked as a fact, asked of the user, or proposed as a modified version), and advice for carrying out the decision is kept as a non-binding recommendation.
 - Approve always means the change from the current state, so a question asked in the negative ("should we not add X?") gets the same result as its affirmative form. The result names the default (what happens if the proposal does not pass) and marks it when the default is itself harmful.
-- If any unit objects to the grade, the item is raised to critical.
-- There is no debate round and no "on hold" (from 1.6.0). A resolution that is not unanimous names the unit in the minority and its reason on the resolution line, and a rejection whose default is itself costly says that not passing is also a choice.
+- A unit can object to the grade only by naming a stated fact that meets a critical criterion (hard to reverse, safety, security, data loss, large cost); the item is then raised to critical, and the resolution line says so. A strong objection alone is a reject vote, not a grade objection.
+- There is no debate round and no "on hold" (from 1.6.0). A resolution that is not unanimous names the units that voted against it and their reason on the resolution line, followed by one fixed line saying that the resolution counts three aspects and is not a judgment that the proposal is best overall, and to weigh the aspect that voted the other way from the resolution; a rejection whose default is itself costly says that not passing is also a choice.
 - If a unit fails, the other two do not vote alone; the result is reported as an **error**.
 - When all three agree, shared premises and missing alternatives are checked once more.
+- A modified version or a different goal suggested by a unit is listed as a candidate for a separate decision, not deliberated in the same run: changing the goal is the user's call.
 - Questions that cannot be answered with approve/reject go to **information** mode: each perspective answers, with no vote.
 
 ### What a resolution means
@@ -42,12 +43,12 @@ Each unit votes on its own perspective's question only: MELCHIOR-1 on whether th
 | Preset | MELCHIOR-1 | BALTHASAR-2 | CASPER-3 |
 |---|---|---|---|
 | Default | Technical feasibility | Risk and cost | Needs and value |
-| Ethics | Consequentialism | Deontology | Virtue ethics and relationships |
-| Code review | Correctness on the intended path | Security, failure, compatibility | Readability, design, maintainability |
-| Personal decision | Real gain and feasibility | Risk, cost and relationships | Motivation and satisfaction |
-| Original (only on request) | Scientist | Mother | Woman |
+| Ethics | Does the sum of outcomes improve? | Can it be done without violating a right or duty? | Does it make you the person you would want to be, and is it good for the relationships involved? |
+| Code review | Does it do what it claims on the intended path? | Is it sound for security, on failure, and for existing callers? | Is it readable, well designed and maintainable? |
+| Personal decision | Does it get you something real, and can you do it now? | Are the possible loss, the cost, and the effect on the people affected with you acceptable? | Do you really want it? |
+| Original (only on request) | Scientist: does it advance understanding? | Mother: does it protect people? | Woman: does it answer love, dreams or desire? |
 
-The framing agent picks the preset unless the user specifies one. If none fits, it designs three new perspectives that can genuinely conflict. In every preset, each unit builds its verdict on its own perspective's question, so two units do not vote on the same argument.
+The framing agent picks the preset unless the user specifies one. If none fits, it designs three new perspectives that can genuinely conflict. In every preset each perspective is a question whose yes means approve, each unit takes one kind of fact, and each builds its verdict on its own question, so two units do not vote on the same argument.
 
 ## Installation
 
@@ -116,8 +117,8 @@ MAGI is developed on Claude. Other hosts load the same skill; what differs is wh
 | Host | Units | Questions before deliberation | Status |
 |---|---|---|---|
 | Claude app, Claude Code | Separate subagents | Asks and waits | Primary host |
-| ChatGPT (plugin upload) | One agent, each unit in turn | Did not stop in test runs; readings of an ambiguous request are deliberated as separate proposals | Tried by hand, 1.3.0 to 1.4.0 |
-| Gemini app (skill upload) | One agent, each unit in turn | Varied between runs and models | Tried by hand, 1.3.0 to 1.4.0 |
+| ChatGPT (plugin upload) | One agent, each unit in turn | Did not stop in test runs; readings of an ambiguous request are deliberated as separate proposals | Tried by hand, 1.3.0 to 1.6.0. On 1.6.0 (three cases in Korean, once each) the unit votes followed the rules every time, but it inserted its own analysis between sections of the format and once made up and passed an alternative proposal (1.6.1 forbids that) |
+| Gemini app (skill upload) | One agent, each unit in turn | Varied between runs and models | Tried by hand, 1.3.0 to 1.6.0. On 1.6.0 (three cases in Korean, once each) the unit votes followed the rules every time; headings came out in English in two of the three |
 | Codex CLI, Gemini CLI | Depends on the host | Not known | Manifests only; not run yet |
 | Other agents via `npx skills` | Depends on the host | Not known | Install checked; not run yet |
 
