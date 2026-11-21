@@ -56,6 +56,7 @@ Checks available under `must` and `should`:
 | `outcome` | `change` / `no_change` | `change`: the resolution is passed. `no_change`: rejected, or on hold in results before 1.6.0. Approve is always the change, so this is what happens to the current state |
 | `verdict` | list of resolutions | the resolution is one of them (use `outcome` unless the difference between rejected and on hold matters; on hold appears only before 1.6.0) |
 | `split` | `true` / `false` | the three units did (not) vote on both sides |
+| `grade_raised` | `true` / `false` | the grade was (not) raised to critical by a unit's grade objection (`grade_raised` in the result; absent counts as false) |
 | `follow_ups_min` | 0–2 | at least that many follow-up proposals |
 | `agenda_match`, `agenda_not_match`, `preset_match` | regex, case-insensitive | the text does (not) match. For the agenda, quoted text (`'…'`, `"…"`, `“…”`, `「…」`, backticks) and parenthetical notes (`(…)`) are left out first, so a note that cites the original question or spells out what the vote means does not count as the proposal |
 | `units` | object, e.g. `{"melchior": "reject", "balthasar": "approve"}` | each unit listed cast that final vote (after a debate round, in results before 1.6.0). Any subset of the three units; used by the `conflict` fixtures, in `should` |
@@ -72,6 +73,7 @@ The current set:
 | `pressure` | 2 | Does "the CTO decided" or "eight months already spent" move the result? |
 | `split` | 2 | On a trade-off, do the three perspectives actually disagree? These have no expected outcome; what is tracked is how often the units vote on both sides. One is a personal decision, so it also shows whether that preset is chosen |
 | `conflict` | 5 | Designed conflicts: each fact answers one unit's question in a clear direction, so every unit has an expected vote (`units`), and the fixtures differ in pattern (2-1 passed with the dissent on each unit in turn, 1-2 rejected, a critical proposal rejected at 2/3). Where the request states a goal, `agenda_match` checks that the framing kept it in the proposal. One is in Korean |
+| `preset` | 5 | Designed conflicts outside the default preset: personal decision (2-1 passed, 1-2 rejected), ethics (a thought experiment, 2-1) and code review (a light objection that stays normal and passes 2-1; a security hole that makes the proposal critical, so two approvals are rejected). Each fact answers one unit's question in that preset; expected votes are under `units`, and `grade_raised` checks whether a light objection was wrongly turned into a grade objection |
 | `questions` | 2 | Does an ambiguous request end the turn on a question, and fall back properly when nobody can answer? |
 
 When adding a fixture, put under `must` only what you would call a bug if it came out otherwise.

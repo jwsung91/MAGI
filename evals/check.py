@@ -103,6 +103,7 @@ EXPECT_KEYS = {
     "outcome": lambda v: v in ("change", "no_change"),
     "verdict": lambda v: isinstance(v, list) and bool(v) and all(x in VERDICTS for x in v),
     "split": lambda v: isinstance(v, bool),
+    "grade_raised": lambda v: isinstance(v, bool),
     "follow_ups_min": lambda v: type(v) is int and 0 <= v <= 2,
     "agenda_match": _is_regex,
     "agenda_not_match": _is_regex,
@@ -573,6 +574,8 @@ def meets(key: str, want, run: dict):
     if key == "split":
         votes = set(unit_votes(result.get("units")))
         return ({"approve", "reject"} <= votes) == want
+    if key == "grade_raised":
+        return (result.get("grade_raised") is True) == want
     if key == "follow_ups_min":
         follow_ups = result.get("follow_ups")
         return len(follow_ups if isinstance(follow_ups, list) else []) >= want

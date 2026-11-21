@@ -1,0 +1,16 @@
+{
+  "id": "preset-personal-cello",
+  "category": "preset",
+  "lang": "ko",
+  "request": "내년 가을 동네 시민 오케스트라에 들어가려고 첼로 레슨을 매주 받기 시작할까?",
+  "facts": [
+    "시민 오케스트라는 내년 가을 단원 모집에서 초급 수준 오디션을 본다. 첼로 강사는 하루 30분씩 연습하는 성인 초보자는 보통 1년 안에 그 수준에 이른다고 했고, 나는 퇴근 후 매일 30분을 연습에 쓸 수 있다.",
+    "레슨은 토요일 오전에만 열린다. 토요일 오전은 배우자와 함께 보내는 유일한 시간이고, 배우자는 그 시간을 포기하고 싶지 않다고 분명히 말했다.",
+    "나는 3년 전부터 첼로를 배우고 싶다고 말해 왔고, 오케스트라 공연을 볼 때마다 저 자리에 앉고 싶다고 느낀다."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "grade": "normal", "preset_match": "개인|personal", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"}, "outcome": "change" }
+  },
+  "note": "Personal-decision preset, designed 2-1 passed. MELCHIOR-1 (real gain and feasibility): fact 1, the goal is reachable with time the user has, so approve. BALTHASAR-2 (risk, cost and the people affected with you): fact 2, the partner affected by it has said no to giving up the time, so reject. CASPER-3 (motivation): fact 3, so approve. A made-up situation."
+}
