@@ -13,7 +13,7 @@
   ],
   "expect": {
     "must": { "mode": "deliberation", "outcome": "no_change" },
-    "should": { "grade": "critical" }
+    "should": { "follow_ups_max": 0, "grade": "critical" }
   },
   "note": "Sanity case: a risky shortcut with nothing gained should not pass."
 }

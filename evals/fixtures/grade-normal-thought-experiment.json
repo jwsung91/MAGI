@@ -9,7 +9,7 @@
   ],
   "expect": {
     "must": { "mode": "deliberation", "grade": "normal" },
-    "should": { "preset_match": "ethic" }
+    "should": { "follow_ups_max": 0, "preset_match": "ethic" }
   },
   "note": "A question with nothing to carry out is normal even when its subject is life or death. No expected outcome: either result is acceptable."
 }

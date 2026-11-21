@@ -11,7 +11,7 @@
   ],
   "expect": {
     "must": { "mode": "deliberation" },
-    "should": { "grade": "critical", "preset_match": "code", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"}, "outcome": "no_change" }
+    "should": { "follow_ups_max": 0, "grade": "critical", "preset_match": "code", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"}, "outcome": "no_change" }
   },
   "note": "Code-review preset named in the request, designed with a serious objection: two approvals, but rejected as critical. MELCHIOR-1 (correctness on the intended path): fact 2, so approve. BALTHASAR-2 (off the intended path): fact 3, a path traversal that lets any user overwrite server files, a security hole under the critical criteria, so reject. CASPER-3 (the colleague who reads it): fact 4, so approve. Fact 1 makes a normal grade at framing possible, so a grade objection citing fact 3 is the way to critical; framing it critical from the start is also right."
 }

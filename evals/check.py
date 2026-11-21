@@ -105,6 +105,7 @@ EXPECT_KEYS = {
     "split": lambda v: isinstance(v, bool),
     "grade_raised": lambda v: isinstance(v, bool),
     "follow_ups_min": lambda v: type(v) is int and 0 <= v <= 2,
+    "follow_ups_max": lambda v: type(v) is int and 0 <= v <= 2,
     "agenda_match": _is_regex,
     "agenda_not_match": _is_regex,
     "preset_match": _is_regex,
@@ -579,6 +580,9 @@ def meets(key: str, want, run: dict):
     if key == "follow_ups_min":
         follow_ups = result.get("follow_ups")
         return len(follow_ups if isinstance(follow_ups, list) else []) >= want
+    if key == "follow_ups_max":
+        follow_ups = result.get("follow_ups")
+        return len(follow_ups if isinstance(follow_ups, list) else []) <= want
     if key == "agenda_match":
         return re.search(want, agenda_text(result), re.I) is not None
     if key == "agenda_not_match":
