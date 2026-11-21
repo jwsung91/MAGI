@@ -65,7 +65,7 @@ Takes the original request, the list of facts, and (if any) the user-specified p
    - **Keep the stated goal.** If the request says what the action is for ("to make our pages faster"), the proposal sentence keeps that goal. If it states none, the goal is a premise: an [assumption], or a question for the user under item 7 if only the user can answer it and it could decide the outcome.
 3. **Grade:** normal / critical, with a one-line reason (section 2). Grade each follow-up proposal separately; it need not match the main proposal's grade.
 4. **Premises:** split into confirmed facts / assumptions / unconfirmed. Assumptions are what the framing agent filled in, and must be marked as assumptions. Write important variables that were not given as unconfirmed. Variables that could decide the outcome and that only the user can answer must not be filled in as [assumption]; send them to item 7, questions for the user.
-5. **Preset:** the chosen preset, a one-line reason, and one runner-up. If the user specified one, follow it. If no preset fits, design three new perspectives (section 3).
+5. **Preset:** the chosen preset, a one-line reason, and one runner-up. If the user specified one, follow it. If no preset fits, design three new perspectives (section 3), each a question whose yes means approve, with one line on which kind of fact each unit takes.
 6. **Options outside the binary:** options that were dropped by turning the proposal into approve/reject (a reduced version, phased adoption, a different method, a change of timing).
 7. **Questions for the user:** from the unconfirmed variables, those that **could decide the outcome and only the user can answer**, as at most 3 questions. Attach one line to each question on how its answer could change the outcome. Do not ask the user about things that can be checked from sources (prices, specs); ask the moderator to check them instead. If there are none, write "none".
 
@@ -123,14 +123,20 @@ The table above is the **default** preset. Keep the unit names and change only t
 | Preset | MELCHIOR-1 | BALTHASAR-2 | CASPER-3 |
 |---|---|---|---|
 | Default (engineering, product) | Technical feasibility | Risk and cost | Needs and value |
-| Ethics | Consequentialism: does the sum of outcomes improve? | Deontology: rights and duties; is this something that must not be done regardless of outcome? | Virtue ethics and relationships: what kind of person does this choice make you; relationships and emotions |
-| Code review | Correctness: does it do what it claims on the intended path? | Off the intended path: security, failure, compatibility with existing callers | The colleague who will read and change it: readability, design, maintainability |
-| Personal decision (career, family, organization) | Real gain and feasibility: what does it actually get you (growth, standing, use), and can you do it with the ability and means you have now? | Risk, cost and relationships: what you could lose, what it costs to carry, stability of life, and what it does to the people affected with you (family, team) | Motivation and satisfaction: do you really want it? |
-| Original | Scientist: understanding and technological progress | Mother: protection and well-being | Woman: love, dreams, desire |
+| Ethics | Consequentialism: does the sum of outcomes improve? | Deontology: can it be done without violating a right or a duty, whatever the outcome? | Virtue ethics and relationships: does this choice make you the kind of person you would want to be, and is it good for the relationships and emotions involved? |
+| Code review | Correctness: does it do what it claims on the intended path? | Off the intended path: is it sound for security, on failure, and for existing callers? | The colleague who will read and change it: is it readable, well designed and maintainable? |
+| Personal decision (career, family, organization) | Real gain and feasibility: does it actually get you something (growth, standing, use), and can you do it with the ability and means you have now? | Risk, cost and relationships: are what you could lose, what it costs to carry, the stability of your life, and what it does to the people affected with you (family, team) acceptable? | Motivation and satisfaction: do you really want it? |
+| Original | Scientist: does it advance understanding or technology? | Mother: does it protect people and their well-being? | Woman: does it answer love, dreams or desire? |
+
+Each perspective is a question whose yes means approve. One kind of fact to each unit:
+- Ethics: outcomes for those affected → MELCHIOR-1; rights, duties, promises, consent → BALTHASAR-2; character, motives, relationships and emotions → CASPER-3.
+- Code review: behaviour and tests on the intended path → MELCHIOR-1; security, failure, existing callers → BALTHASAR-2; readability, structure, how the people who maintain it find it → CASPER-3.
+- Personal decision: what it gets you and whether you can do it → MELCHIOR-1; money, time, risk, reversibility, and the people affected with you → BALTHASAR-2; whether you want it → CASPER-3.
+- Original: knowledge and technology → MELCHIOR-1; safety and well-being → BALTHASAR-2; love, dreams and desire → CASPER-3.
 
 The original preset is inspired by the three aspects given to the MAGI in *Neon Genesis Evangelion*. Its perspectives run along the same lines as the default preset, so use it only when the user specifies it; the framing agent does not choose it or name it as runner-up.
 
-The framing agent chooses the preset (section 1). If the user specifies one, follow it. If no preset fits, the framing agent designs three new perspectives for the proposal, chosen so that they can conflict with each other and do not judge the same question.
+The framing agent chooses the preset (section 1). If the user specifies one, follow it. If no preset fits, the framing agent designs three new perspectives for the proposal, chosen so that they can conflict with each other and do not judge the same question. Each is written as a question whose yes means approve, with one line on which kind of fact each unit takes.
 
 In every preset, custom perspectives included, a unit builds its verdict on its own perspective's question. A point that belongs to another unit's question goes under recommendations, not in the key rationale. Otherwise two units vote on the same argument and the majority is narrower than it looks.
 
@@ -147,14 +153,14 @@ Each unit produces:
 - **Verdict:** approve / reject. There is no conditional verdict: the vote must commit. If the verdict depends on a condition, handle the condition before voting:
   - a fact that can be checked from sources → report it as a needed check; the moderator checks it and re-runs that unit once with the result;
   - a fact only the user can answer → vote on the proposal as framed and write the condition under the doubted premise;
-  - a modified version of the proposal (e.g. "only if done at off-peak hours") → vote on the proposal as framed, and suggest the modified version as a recommendation;
+  - a modified version of the proposal (e.g. "only if done at off-peak hours"), or a proposal with a different goal → vote on the proposal as framed, and suggest the other version only as a candidate for a separate decision. It is not deliberated or voted on in this run: changing the proposal or its goal is the user's decision;
   - advice for carrying it out → put it under recommendations; it does not change the vote.
 - **Confidence:** high / medium / low
 - **Key rationale:** at most 3 points
 - **What would flip the verdict:** what would have to change for the unit to vote the other way
 - **Recommendations:** (optional, non-binding) advice for carrying out the proposal, or a modified version worth deciding separately. Recommendations are not counted in the vote.
 - **Doubted premise:** the one premise the unit finds most doubtful from its perspective, and how its verdict would change if that premise were wrong
-- **Grade objection:** (only if any) if the unit thinks the grade is wrong, give the reason (e.g. "the judgment that this is reversible is wrong")
+- **Grade objection:** (only if any) on a normal proposal, and only by naming a fact in the list of facts that meets one of the critical criteria of section 2: hard to reverse, safety, security, data loss, or large cost (e.g. "fact 3: any logged-in user can overwrite server files; security"). A strong objection to the proposal is not a grade objection; it is a reject vote.
 
 Premise doubts are split by perspective. If all three units accept the same premises unchanged, a common-mode failure arises at the input stage.
 - MELCHIOR-1: technical premises (performance, how things work, accuracy of data)
@@ -169,11 +175,11 @@ Decide in this order.
 
 1. **Error:** if a unit failed, gave no answer, or broke the format, re-run only that unit once. If it fails again, the resolution is **error**. Do not vote with the remaining two units only. Expose the failure instead of hiding it.
 2. **Information mode:** if the proposal is a question that cannot be answered with approve/reject, do not vote. Present each unit's answer, what they share, and where they diverge.
-3. **Grade objection:** if even one unit raised a grade objection on a normal proposal, raise it to critical and resolve accordingly (the "when in doubt, critical" principle).
+3. **Grade objection:** if a unit raised a grade objection on a normal proposal, check that the fact it names is in the list of facts and meets a critical criterion of section 2. If so, raise the proposal to critical and resolve accordingly (the "when in doubt, critical" principle); the resolution line says the grade was raised by that unit's objection. If not, do not accept the objection: keep the grade and say on the Grade line which objection was not accepted and why.
 4. **Vote:** count approvals. Follow-up proposals are resolved separately by the same rules.
    - Normal proposal: 2 or more approvals → **passed**; otherwise **rejected**.
    - Critical proposal: all 3 approve → **passed**; otherwise **rejected**. There is no debate round and no on hold: the units answer different questions, so a second round gives a unit no reason of its own to move.
-5. **Resolution line:** a resolution that is not unanimous names, whatever the grade, the unit or units in the minority and the reason in one phrase, e.g. "rejected (approve 2/3; a critical proposal needs all three. Against: BALTHASAR-2, the logs are the only record)".
+5. **Resolution line:** a resolution that is not unanimous names, whether passed or rejected and whatever the grade, the unit or units that voted against the proposal and the reason in one phrase, e.g. "rejected (approve 2/3; a critical proposal needs all three. Against: BALTHASAR-2, the logs are the only record)". If a grade objection made the proposal critical, the line says so.
    - If a proposal is rejected and its default is itself harmful or costly, say with the resolution that not passing it is also a choice, and by when it has to be made if that is known.
 - **Unanimity check:** if all three units reached the same conclusion (all approve or all reject), suspect that they share the same blind spot because they come from the same model, check the following two points, and record the result. Record both points every time, writing "none found" for a point with nothing to report; this applies to follow-up proposals that were unanimous as well.
   1. **Shared premise:** do all three units' judgments rest on the same premise? Especially if it is an assumption filled in by the framing agent, state whether the resolution would flip if that premise were wrong.
@@ -189,7 +195,7 @@ Use the format below as it is, with the headings in this order and none merged. 
 **Proposal:** ... (main proposal; what approve and reject each mean; if the request was asked in the negative, say so)
 **Default if not passed:** ... (what stays or happens; mark it if the default is itself harmful or hard to reverse)
 **Follow-up proposals:** (if any)
-**Grade:** normal / critical — (one-line reason; mark if raised by a grade objection)
+**Grade:** normal / critical — (one-line reason; mark if raised by a grade objection; name an objection that was not accepted and why)
 **Additional information:** (answers received from the user before deliberation; items left as assumptions without an answer; questions that were not asked, each with how its answer would change the outcome)
 **Preset:** default / ethics / code review / personal decision / original / custom — (one-line reason, runner-up)
 **Premises:** confirmed facts / assumptions / unconfirmed (mark assumptions)
@@ -202,10 +208,12 @@ Use the format below as it is, with the headings in this order and none merged. 
 | BALTHASAR-2 | Reject | Medium | ... | ... |
 | CASPER-3 | Approve | Medium | ... | ... |
 
-**Resolution:** passed / rejected / error (approve n/3; if not unanimous, the minority unit and its reason) — the outcome in plain words (what is done or not done), answering the question as the user asked it; if rejected with a harmful or costly default, that not passing is also a choice
+**Resolution:** passed / rejected / error (approve n/3; if not unanimous, the units that voted against and their reason; if a grade objection made it critical, say so) — the outcome in plain words (what is done or not done), answering the question as the user asked it; if rejected with a harmful or costly default, that not passing is also a choice
+(only if not unanimous) This resolution counts the answers of three aspects; it is not a judgment that the proposal is best overall. Weigh the aspect that voted against it yourself.
 **Follow-up resolutions:** (if any) for each follow-up proposal, its resolution line and a per-unit table, so the user can see why each unit voted as it did:
 
-**Follow-up 1:** (follow-up text) — normal / critical — passed / rejected (approve n/3; if not unanimous, the minority unit and its reason)
+**Follow-up 1:** (follow-up text) — normal / critical — passed / rejected (approve n/3; if not unanimous, the units that voted against and their reason)
+(only if not unanimous) the same notice line as under the resolution
 
 | Unit | Verdict | Confidence | Key rationale |
 |---|---|---|---|
@@ -213,7 +221,7 @@ Use the format below as it is, with the headings in this order and none merged. 
 | BALTHASAR-2 | Reject | ... | ... |
 | CASPER-3 | Approve | ... | ... |
 
-**Recommendations:** (if any, per unit; non-binding. If units recommend modified versions of the proposal, list them as candidates for a separate decision without merging them)
+**Recommendations:** (if any, per unit; non-binding. If units recommend modified versions of the proposal or a different goal, list them as candidates for a separate decision without merging, deliberating or voting on them)
 
 **Unanimity check:** (if applicable) shared premise, missing alternative
 
@@ -261,7 +269,9 @@ Check the result once it is tallied and before any of it is shown, so the card, 
 - **Direction:** approve is the change from the current state and the default is stated; for a request asked in the negative, the resolution says what it means for the question as asked.
 - **Facts:** every fact a unit cites is in the list of facts; no personal detail about the user appears that is not in the list.
 - **Cells:** every verdict is approve, reject, or error, and every confidence is high, medium, or low (in the output language). No placeholder from the format is left as written ("...", "Follow-up 1" with no text after it).
-- **Resolution line:** a resolution that is not unanimous names the minority unit and its reason.
+- **Resolution line:** a resolution that is not unanimous names the units that voted against the proposal and their reason, whether it passed or was rejected.
+- **Notice line:** every resolution line that is not unanimous (main and follow-up) is followed directly by the notice line of the format, in the output language; a unanimous one is not.
+- **Proposals:** only the main and follow-up proposals from the framing were deliberated; no alternative proposal was made up and voted on.
 - **Unanimity check (if any proposal was unanimous):** both points are recorded.
 - **Limitations line:** says how the units were actually run.
 - **Language:** headings, labels, and verdict words are in the output language; only the unit names stay in English.
@@ -337,7 +347,7 @@ Where the agent can run shell commands and `MAGI_RESULTS_DIR` is set, also recor
   | `framing_done` | after framing (again after re-framing) | `mode`, `agenda`, `follow_ups`, `grade`, `preset`, `questions` |
   | `questions_answered` | after the user answers | `answers` |
   | `units_started` | before running the units | `round` (always 1) |
-  | `units_done` | when the units' results arrive (all three at once) | `round`, and per unit `verdict` and `confidence`; in round 2 also `changed` and, if changed, `change_accepted` |
+  | `units_done` | when the units' results arrive (all three at once) | `round`, and per unit `verdict` and `confidence` |
   | `final` | at the end | `result`: the full version 2 result object |
   | `error` | on failure | `stage`, `message` |
 
