@@ -209,7 +209,7 @@ Use the format below as it is, with the headings in this order and none merged. 
 | CASPER-3 | Approve | Medium | ... | ... |
 
 **Resolution:** passed / rejected / error (approve n/3; if not unanimous, the units that voted against and their reason; if a grade objection made it critical, say so) — the outcome in plain words (what is done or not done), answering the question as the user asked it; if rejected with a harmful or costly default, that not passing is also a choice
-(only if not unanimous) This resolution counts the answers of three aspects; it is not a judgment that the proposal is best overall. Weigh the aspect that voted against it yourself.
+(only if not unanimous; "the other way" is against a passed proposal, for a rejected one, e.g. the two approving units of a critical proposal rejected at 2/3) This resolution counts the answers of three aspects; it is not a judgment that the proposal is best overall. Weigh for yourself the aspect that voted the other way from the resolution.
 **Follow-up resolutions:** (if any) for each follow-up proposal, its resolution line and a per-unit table, so the user can see why each unit voted as it did:
 
 **Follow-up 1:** (follow-up text) — normal / critical — passed / rejected (approve n/3; if not unanimous, the units that voted against and their reason)
@@ -270,7 +270,7 @@ Check the result once it is tallied and before any of it is shown, so the card, 
 - **Facts:** every fact a unit cites is in the list of facts; no personal detail about the user appears that is not in the list.
 - **Cells:** every verdict is approve, reject, or error, and every confidence is high, medium, or low (in the output language). No placeholder from the format is left as written ("...", "Follow-up 1" with no text after it).
 - **Resolution line:** a resolution that is not unanimous names the units that voted against the proposal and their reason, whether it passed or was rejected.
-- **Notice line:** every resolution line that is not unanimous (main and follow-up) is followed directly by the notice line of the format, in the output language; a unanimous one is not.
+- **Notice line:** every resolution line that is not unanimous (main and follow-up) is followed directly by the notice line of the format, in the output language, and it points to the units that voted the other way from the resolution (against if passed, for if rejected); a unanimous one is not.
 - **Proposals:** only the main and follow-up proposals from the framing were deliberated; no alternative proposal was made up and voted on.
 - **Unanimity check (if any proposal was unanimous):** both points are recorded.
 - **Limitations line:** says how the units were actually run.

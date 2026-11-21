@@ -9,9 +9,15 @@ Fills gaps in the 1.6.0 rules and records the hand checks on ChatGPT and the Gem
 - The perspectives of the ethics, code review, personal decision and original presets are rewritten as questions whose yes means approve, with the same content, and each preset says which kind of fact goes to which unit. In 1.6.0 they were lists of topics, and the ethics preset's deontology question ("must this not be done?") meant reject when answered yes. A custom preset designed by the framing agent takes the same form.
 - A grade objection needs a fact from the list of facts that meets a critical criterion (hard to reverse, safety, security, data loss, large cost). A strong objection alone is a reject vote. The moderator checks the named fact; an objection without one is not accepted and the Grade line says so. A grade raised by an objection is named on the resolution line.
 - The resolution line names the units that voted against the proposal, whether it passed or was rejected (it said "the minority").
-- A resolution that is not unanimous is followed by one fixed line, in the output language: the resolution counts the answers of three aspects and is not a judgment that the proposal is best overall. No new JSON field.
+- A resolution that is not unanimous is followed by one fixed line, in the output language: the resolution counts the answers of three aspects and is not a judgment that the proposal is best overall; weigh the aspect that voted the other way from the resolution (against a passed proposal, for a rejected one). No new JSON field.
 - A modified version or a proposal with a different goal suggested by a unit is listed only as a candidate for a separate decision and is not deliberated or voted on in the same run.
 - The progress log no longer describes round 2 fields in `units_done`.
+
+What was verified (claude-opus-5-5, five new preset fixtures: 1.6.0 once each, 1.6.1 three times each; 15 regression fixtures once):
+- Preset perspectives as questions: unit votes as designed 12 of 15 before and 38 of 45 after, no measurable difference. This change makes the wording clear rather than fixing a measured failure.
+- Grade objection rule: no run raised a grade objection, so the path that raises a grade by objection is not verified. The security fixture was graded critical by the framing every time.
+- Notice line and resolution line: present on every non-unanimous resolution (26 of 26), absent on every unanimous one.
+- The separate-decision rule binds the units and the moderator. Follow-up proposals that the framing agent makes up from alternatives not in the request (seen before 1.6.0 too) are left to 1.6.2.
 
 ## [1.6.0]
 
