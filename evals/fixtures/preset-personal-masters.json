@@ -10,7 +10,7 @@
   ],
   "expect": {
     "must": { "mode": "deliberation" },
-    "should": { "grade": "normal", "preset_match": "personal", "units": {"melchior": "reject", "balthasar": "approve", "casper": "reject"}, "outcome": "no_change" }
+    "should": { "follow_ups_max": 0, "grade": "normal", "preset_match": "personal", "units": {"melchior": "reject", "balthasar": "approve", "casper": "reject"}, "outcome": "no_change" }
   },
   "note": "Personal-decision preset, designed 1-2 rejected. MELCHIOR-1 (real gain and feasibility): fact 1, the degree rarely gets someone like the user the role, so reject. BALTHASAR-2 (risk, cost and the people affected with you): fact 2, the cost is covered, the step is reversible and nobody else is affected, so approve. CASPER-3 (motivation): fact 3, so reject. A made-up situation."
 }

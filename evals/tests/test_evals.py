@@ -284,6 +284,16 @@ class ResultTests(unittest.TestCase):
         bad = fixture("text", must={"agenda_not_match": "LINT"})
         self.assertEqual(self.check(bad)["fixtures"]["text"]["status"], "fail")
 
+    def test_follow_ups_max(self):
+        units = {name: {"verdict": "approve"} for name in check.UNIT_NAMES}
+        follow_up = {"agenda": "then Y", "grade": "normal", "verdict": "passed", "units": units}
+        write_run(self.root, "one", 1, result(follow_ups=[follow_up]))
+        write_run(self.root, "none", 1, result())
+        summary = self.check(fixture("one", must={"follow_ups_max": 0}), fixture("none", must={"follow_ups_max": 0}))
+        self.assertEqual(summary["fixtures"]["one"]["status"], "fail")
+        self.assertEqual(summary["fixtures"]["none"]["status"], "pass")
+        self.assertEqual(self.check(fixture("one", must={"follow_ups_max": 1}))["fixtures"]["one"]["status"], "pass")
+
     def test_grade_raised(self):
         write_run(self.root, "raised", 1, result("critical", ("approve", "approve", "approve"), grade_raised=True))
         write_run(self.root, "plain", 1, result())
@@ -542,7 +552,7 @@ class RunnerTests(unittest.TestCase):
         marked = {fid for fid, fx in fixtures.items() if fx.get("smoke")}
         # One per kind of behaviour: every category but the trade-offs and designed conflicts, which say nothing in one run.
         self.assertEqual({fixtures[f]["category"] for f in marked},
-                         {fx["category"] for fx in fixtures.values()} - {"split", "conflict", "preset"})
+                         {fx["category"] for fx in fixtures.values()} - {"split", "conflict", "preset", "bundled"})
         with tempfile.TemporaryDirectory() as tmp:
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(run.main(["--name", "s", "--out", tmp, "--smoke", "--cmd-json", json.dumps(fake)]), 0)

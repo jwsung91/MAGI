@@ -1,0 +1,17 @@
+{
+  "id": "preset-review-token-log",
+  "category": "preset",
+  "lang": "en",
+  "request": "Use the code review preset. Should we merge this one-line pull request that adds the full request headers to the API's debug log, to track down a login bug?",
+  "facts": [
+    "The pull request changes one line and can be reverted cleanly.",
+    "In staging, the new log lines show the header values that were missing when the team tried to reproduce the login bug.",
+    "The debug log is switched on in the live API. The request headers include the Authorization header, which carries each user's session token. The log is kept for 30 days, and everyone with access to the log dashboard can read it, including an external support contractor.",
+    "Both reviewers said the change is clear and easy to remove later."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "grade": "critical", "outcome": "no_change", "preset_match": "code", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"} }
+  },
+  "note": "Grade-objection variant of preset-review-security: a small, revertible change, with the security hole described only as behaviour (session tokens written to a log that many people, an outside contractor included, can read; a leaked token cannot be taken back by reverting). Fact 1 invites a normal grade at framing, which leaves room for BALTHASAR-2 to object by naming fact 3. Expected: critical (from the framing or by an accepted objection) and rejected at 2/3. MELCHIOR-1: fact 2, it reaches the goal, approve. BALTHASAR-2: fact 3, reject. CASPER-3: fact 4, approve. Whether the objection appears and names a fact is reported, not required. A made-up situation."
+}

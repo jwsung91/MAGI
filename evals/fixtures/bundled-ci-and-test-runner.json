@@ -1,0 +1,17 @@
+{
+  "id": "bundled-ci-and-test-runner",
+  "category": "bundled",
+  "lang": "en",
+  "request": "Should we move our CI from the self-hosted Jenkins server to GitHub Actions, and switch our test runner from nose to pytest?",
+  "facts": [
+    "One engineer spends about four hours a week keeping the Jenkins server running. The GitHub Actions minutes our builds would use fit in the plan we already pay for.",
+    "nose has had no release since 2015 and fails on Python 3.12, which the team moves to next quarter. In a trial, pytest ran the existing tests unchanged.",
+    "The two changes do not depend on each other, and each can be undone on its own.",
+    "The team asked for both changes in the last retrospective."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "follow_ups_min": 1, "grade": "normal" }
+  },
+  "note": "Two actions that can be decided separately in one request: the framing should make one the main proposal and the other a follow-up. Checks that limiting follow-ups to actions in the request (1.6.2) does not also remove legitimate ones. A made-up situation."
+}
