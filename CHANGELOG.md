@@ -11,6 +11,8 @@ Follow-up proposals come only from the request. In the 1.6.1 runs the framing ag
 - Self-check: every follow-up proposal is another action in the request or another reading of it.
 - Resolution rules, grades, presets and the result JSON format (version 2) are unchanged.
 
+Evidence (claude-opus-5-5): on the seven fixtures where an alternative had become a follow-up in the 1.6.1 runs, one run each, one follow-up remained (the trolley case: "permissible, not required", closer to another reading of "should" than to an alternative); the alternatives stayed under options outside the binary or recommendations. Legitimate follow-ups were kept: a request with two separate actions got one in 2 of 2 runs, and the unattended ambiguous release kept its other reading. The framing agent was never re-run by the moderator. No `must` failures.
+
 ## [1.6.1]
 
 Fills gaps in the 1.6.0 rules and records the hand checks on ChatGPT and the Gemini app. The default preset, the resolution rules, the grade criteria and the result JSON format (version 2) are unchanged.
