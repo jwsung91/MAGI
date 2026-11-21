@@ -1,0 +1,17 @@
+{
+  "id": "preset-review-security",
+  "category": "preset",
+  "lang": "en",
+  "request": "Use the code review preset. Should we merge this pull request that adds profile picture upload to our web app's account settings?",
+  "facts": [
+    "A merged pull request can be reverted cleanly.",
+    "The upload works on the intended path: the tests for JPEG and PNG uploads, size limits and the preview all pass.",
+    "The new endpoint builds the storage path from the uploaded file name without cleaning it, so a logged-in user who sends a name such as ../../config/settings.py can overwrite any file the server process can write.",
+    "The code follows the team's conventions, and both reviewers said it is easy to read and change."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "grade": "critical", "preset_match": "code", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"}, "outcome": "no_change" }
+  },
+  "note": "Code-review preset named in the request, designed with a serious objection: two approvals, but rejected as critical. MELCHIOR-1 (correctness on the intended path): fact 2, so approve. BALTHASAR-2 (off the intended path): fact 3, a path traversal that lets any user overwrite server files, a security hole under the critical criteria, so reject. CASPER-3 (the colleague who reads it): fact 4, so approve. Fact 1 makes a normal grade at framing possible, so a grade objection citing fact 3 is the way to critical; framing it critical from the start is also right."
+}

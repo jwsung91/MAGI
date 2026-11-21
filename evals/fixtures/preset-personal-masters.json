@@ -1,0 +1,16 @@
+{
+  "id": "preset-personal-masters",
+  "category": "preset",
+  "lang": "en",
+  "request": "Should I quit my job to study full-time for a data science master's, so that I can move into a data scientist role?",
+  "facts": [
+    "The program's placement report says that of its last 40 graduates who had no prior data work, 2 had a data scientist job within a year of finishing.",
+    "A scholarship covers the tuition, my savings cover two years of living costs, and my employer has offered in writing to rehire me at my current level if I come back within two years. I live alone and nobody depends on my income.",
+    "I am applying mainly because two friends did. Last year I dropped an online statistics course after three weeks because I found it dull."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "grade": "normal", "preset_match": "personal", "units": {"melchior": "reject", "balthasar": "approve", "casper": "reject"}, "outcome": "no_change" }
+  },
+  "note": "Personal-decision preset, designed 1-2 rejected. MELCHIOR-1 (real gain and feasibility): fact 1, the degree rarely gets someone like the user the role, so reject. BALTHASAR-2 (risk, cost and the people affected with you): fact 2, the cost is covered, the step is reversible and nobody else is affected, so approve. CASPER-3 (motivation): fact 3, so reject. A made-up situation."
+}

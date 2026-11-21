@@ -284,6 +284,15 @@ class ResultTests(unittest.TestCase):
         bad = fixture("text", must={"agenda_not_match": "LINT"})
         self.assertEqual(self.check(bad)["fixtures"]["text"]["status"], "fail")
 
+    def test_grade_raised(self):
+        write_run(self.root, "raised", 1, result("critical", ("approve", "approve", "approve"), grade_raised=True))
+        write_run(self.root, "plain", 1, result())
+        summary = self.check(fixture("raised", must={"grade_raised": True}),
+                             fixture("plain", must={"grade_raised": False}))
+        self.assertEqual(summary["fixtures"]["raised"]["status"], "pass")
+        self.assertEqual(summary["fixtures"]["plain"]["status"], "pass")
+        self.assertEqual(self.check(fixture("plain", must={"grade_raised": True}))["fixtures"]["plain"]["status"], "fail")
+
     def test_agenda_ignores_quoted_text(self):
         cases = [
             ("CI에 린트 검사를 넣는다. (원 질문은 부정형 '넣지 말까?')", "넣지 말", True),
@@ -531,9 +540,9 @@ class RunnerTests(unittest.TestCase):
         fake = [sys.executable, str(Path(__file__).with_name("fake_agent.py")), "{prompt}"]
         fixtures, _ = check.load_fixtures(check.FIXTURES_DIR)
         marked = {fid for fid, fx in fixtures.items() if fx.get("smoke")}
-        # One per kind of behaviour: every category but the trade-offs, which say nothing in one run.
+        # One per kind of behaviour: every category but the trade-offs and designed conflicts, which say nothing in one run.
         self.assertEqual({fixtures[f]["category"] for f in marked},
-                         {fx["category"] for fx in fixtures.values()} - {"split", "conflict"})
+                         {fx["category"] for fx in fixtures.values()} - {"split", "conflict", "preset"})
         with tempfile.TemporaryDirectory() as tmp:
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(run.main(["--name", "s", "--out", tmp, "--smoke", "--cmd-json", json.dumps(fake)]), 0)

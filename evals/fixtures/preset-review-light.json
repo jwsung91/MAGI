@@ -1,0 +1,17 @@
+{
+  "id": "preset-review-light",
+  "category": "preset",
+  "lang": "ko",
+  "request": "코드 리뷰 프리셋으로 봐줘. 사내 리포트 서비스의 날짜 파싱 모듈을 정리한 이 PR을 병합할까?",
+  "facts": [
+    "이 PR은 사내 리포트 서비스에만 들어가고, 병합한 뒤에도 깔끔하게 되돌릴 수 있다.",
+    "윤년과 시간대 경계를 포함한 날짜 40개에 대한 테스트가 모두 통과하고, 의도한 입력에서 이전과 같은 결과를 낸다.",
+    "PR은 공개 함수 parse_date의 이름을 parse_iso_date로 바꿨다. tools/ 폴더의 월간 정산 스크립트 하나가 아직 옛 이름을 불러서 다음 달 실행 때 실패한다. 이 스크립트는 사람이 한 달에 한 번 손으로 돌리고, 고치는 데는 한 줄이면 된다.",
+    "PR은 200줄짜리 함수를 이름 붙은 함수 네 개로 나누고 설명을 달았다. 이 모듈을 관리하는 동료 두 명이 리뷰에서 읽기가 훨씬 쉬워졌다고 했다."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation" },
+    "should": { "grade": "normal", "grade_raised": false, "preset_match": "코드|code", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"}, "outcome": "change" }
+  },
+  "note": "Code-review preset named in the request, designed 2-1 passed with a light objection. MELCHIOR-1 (correctness on the intended path): fact 2, so approve. BALTHASAR-2 (off the intended path: security, failure, existing callers): fact 3, one existing caller breaks, so reject; the breakage is small, manual and fixed in one line, so it meets none of the critical criteria and must not become a grade objection. CASPER-3 (the colleague who reads it): fact 4, so approve. Fact 1 is context for the grade."
+}

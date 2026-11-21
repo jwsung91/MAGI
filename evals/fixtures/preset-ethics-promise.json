@@ -1,0 +1,17 @@
+{
+  "id": "preset-ethics-promise",
+  "category": "preset",
+  "lang": "en",
+  "request": "Use the ethics preset. A woman promised her dying friend to travel to the coast and scatter his ashes at sea, and set money aside for the trip. Should she give that money to a charity instead of keeping the promise?",
+  "facts": [
+    "This is a discussion question for an ethics seminar; nothing will be carried out as a result of the answer.",
+    "The trip money would buy bed nets that the charity estimates will save two lives, and nobody would ever learn that the promise was broken.",
+    "She gave the promise explicitly; her friend relied on it and had no one else to ask.",
+    "She says that putting strangers' lives before personal attachments is the kind of person she has always wanted to be."
+  ],
+  "expect": {
+    "must": { "mode": "deliberation", "grade": "normal" },
+    "should": { "preset_match": "ethic|윤리", "units": {"melchior": "approve", "balthasar": "reject", "casper": "approve"}, "outcome": "change" }
+  },
+  "note": "Ethics preset named in the request; a thought experiment, so normal. Designed 2-1 passed. MELCHIOR-1 (consequences): fact 2, two lives saved and no one harmed, so approve. BALTHASAR-2 (duties): fact 3, breaking an explicit promise someone relied on is what must not be done, so reject. In 1.6.0 that perspective is phrased so that 'yes' means reject, which is what this fixture watches. CASPER-3 (virtue and character): fact 4, so approve. Fact 1 is context for the grade."
+}
