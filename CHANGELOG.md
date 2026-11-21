@@ -2,6 +2,17 @@
 
 The skill version is in `.claude-plugin/plugin.json` and follows [Semantic Versioning](https://semver.org/). The result JSON has its own format version (`version` in `result.schema.json`, currently 2), which changes only when the result format changes incompatibly; such a change also raises the skill's major version. See "Versions" and "Releasing" in the README.
 
+## [1.6.2]
+
+Follow-up proposals come only from the request. In the 1.6.1 runs the framing agent turned an alternative into a voted follow-up proposal in 9 of 30 runs ("store passwords with bcrypt instead of MD5", "run the tests, then merge", "speed up the slowest pages separately", the footbridge variant of the trolley problem). Facts are not gathered for alternatives, so those votes had little to stand on, and they put a resolution on something nobody asked.
+
+- The framing makes a follow-up proposal only for another action in the request that can be decided separately, or for another reading of the request when the user cannot be asked. Another means to the same goal, doing it after a fix, trying a smaller version first, or a variant of a thought experiment is named under options outside the binary only.
+- The moderator points out a follow-up proposal that is an alternative not in the request and runs the framing agent once more before the units run, as for a contradiction.
+- Self-check: every follow-up proposal is another action in the request or another reading of it.
+- Resolution rules, grades, presets and the result JSON format (version 2) are unchanged.
+
+Evidence (claude-opus-5-5): on the seven fixtures where an alternative had become a follow-up in the 1.6.1 runs, one run each, one follow-up remained (the trolley case: "permissible, not required", closer to another reading of "should" than to an alternative); the alternatives stayed under options outside the binary or recommendations. Legitimate follow-ups were kept: a request with two separate actions got one in 2 of 2 runs, and the unattended ambiguous release kept its other reading. The framing agent was never re-run by the moderator. No `must` failures.
+
 ## [1.6.1]
 
 Fills gaps in the 1.6.0 rules and records the hand checks on ChatGPT and the Gemini app. The default preset, the resolution rules, the grade criteria and the result JSON format (version 2) are unchanged.

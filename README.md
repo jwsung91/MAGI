@@ -32,6 +32,7 @@ The agent that frames the proposal is separate from the one that summarizes the 
 - If a unit fails, the other two do not vote alone; the result is reported as an **error**.
 - When all three agree, shared premises and missing alternatives are checked once more.
 - A modified version or a different goal suggested by a unit is listed as a candidate for a separate decision, not deliberated in the same run: changing the goal is the user's call.
+- Follow-up proposals are made only for other actions the request contains, or for other readings of an ambiguous request when the user cannot be asked. Alternatives (another means, "after a fix", a smaller version first, a variant) are named under options outside the binary and not voted on.
 - Questions that cannot be answered with approve/reject go to **information** mode: each perspective answers, with no vote.
 
 ### What a resolution means
